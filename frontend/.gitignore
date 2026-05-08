@@ -14,17 +14,6 @@ build/
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 
-# --- Backend (Java/Spring Boot) ---
-# Ignorujemy skompilowane klasy i foldery budowania
-target/
-build/
-bin/
-out/
-*.class
-*.jar
-*.war
-*.ear
-
 # Pliki pomocnicze Mavena/Gradle
 .mvn/
 .gradle/
@@ -32,7 +21,6 @@ out/
 .incremental/
 
 # --- IDE (VS Code / IntelliJ / Eclipse) ---
-# Każdy z Was ma inne ustawienia edytora, nie chcemy ich w repo
 .vscode/
 .idea/
 *.iml
@@ -42,12 +30,6 @@ out/
 .classpath
 .settings/
 
-# --- Konfiguracja i Sekrety ---
-# To najważniejsza część dla Waszej współpracy z .env
-.env
-.env.*
-!.env.example
-!.env.test
 
 # --- Logi ---
 *.log

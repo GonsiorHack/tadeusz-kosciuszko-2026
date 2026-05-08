@@ -83,12 +83,12 @@ Po wypchnięciu zmian poinformuj resztę zespołu o konieczności sprawdzenia i 
 - API: Nie należy wpisywać adresów IP bezpośrednio w kodzie. Należy korzystać z import.meta.env.VITE_API_URL.
 
 ## 5. 
-Pozdrawiam Cie Pjotjusiu, ne daj će <br>
-wewnatrz juz folderu frontend wpisujeta:
+Pozdrawiam Cie Pjotisiu, ne daj će
+wewnatrz juz folderu frontend
 
 ```
 npm run dev
 o
 ```
-- o od open i ci sie w przegladarce odpala <br>
+- od open i ci sie w przegladarce odpala
 przdatne inne: r restart, q zamkniecie

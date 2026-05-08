@@ -21,7 +21,6 @@ vite.config.ts.timestamp-*
 .incremental/
 
 # --- IDE (VS Code / IntelliJ / Eclipse) ---
-# Każdy z Was ma inne ustawienia edytora, nie chcemy ich w repo
 .vscode/
 .idea/
 *.iml

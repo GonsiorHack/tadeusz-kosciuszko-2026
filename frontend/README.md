@@ -81,3 +81,14 @@ Po wypchnięciu zmian poinformuj resztę zespołu o konieczności sprawdzenia i 
 - Komponenty: Nowe elementy interfejsu (przyciski, karty) należy umieszczać w src/components/.
 - Style: Korzystamy z biblioteki Tailwind CSS bezpośrednio w klasach HTML (class="...").
 - API: Nie należy wpisywać adresów IP bezpośrednio w kodzie. Należy korzystać z import.meta.env.VITE_API_URL.
+
+## 5. 
+Pozdrawiam Cie Pjotisiu, ne daj će
+wewnatrz juz folderu frontend
+
+```
+npm run dev
+o
+```
+- od open i ci sie w przegladarce odpala
+przdatne inne: r restart, q zamkniecie

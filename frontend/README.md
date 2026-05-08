@@ -24,7 +24,7 @@ CMD + Shift + .
 (ta kropka tez).
 
 ### Ustawienie zmiennych środowiskowych
-1. Plik "zmiennazwena'kropka'env.txt" zmień na .env
+1. ~~Plik "zmiennazwena'kropka'env.txt" zmień na .env~~
 2. Domyślny adres API dla prac lokalnych: VITE_API_URL=http://localhost:8080/api.
 3. Adres ten będzie modyfikowany w zależności od IP hosta backendu podczas pracy zespołowej.
 

@@ -1,6 +1,5 @@
 package com.github.gonsior.kosciuszkon.controller;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,7 +15,7 @@ public class CyberFactController {
     @GetMapping("/fact")
     public String getFact() {
         return chatClient.prompt()
-                .user("Podaj ciekawostkę o cyberbezpieczeństwie")
+                .user("Podaj ciekawostkę o kryptografii i cyberbezpieczeństwie max 4 zdania")
                 .call()
                 .content();
     }

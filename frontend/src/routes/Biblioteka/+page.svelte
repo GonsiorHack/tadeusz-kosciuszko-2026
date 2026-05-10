@@ -2,19 +2,59 @@
   const categories = [
     {
       title: "Podstawy Kryptografii",
-      items: ["Wprowadzenie do szyfrowania", "Klucze publiczne i prywatne", "Certyfikaty SSL/TLS"]
+      items: [
+        {
+          name: "Wprowadzenie do szyfrowania",
+          def: "Szyfrowanie to proces przekształcania czytelnych danych (tekstu jawnego) w nieczytelną formę (szyfrogram) za pomocą algorytmu i klucza. Tylko osoby posiadające odpowiedni klucz mogą odszyfrować wiadomość i odczytać jej treść."
+        },
+        {
+          name: "Klucze publiczne i prywatne",
+          def: "Kryptografia asymetryczna używa pary kluczy: klucz publiczny służy do szyfrowania i może być udostępniany wszystkim, natomiast klucz prywatny jest ściśle tajny i służy do odszyfrowania wiadomości."
+        },
+        {
+          name: "Certyfikaty SSL/TLS",
+          def: "Certyfikat SSL/TLS to cyfrowy dokument potwierdzający tożsamość serwera i umożliwiający zaszyfrowanie komunikacji między przeglądarką a stroną internetową. Widoczny jest jako ikona kłódki i skrót 'https://'."
+        }
+      ]
     },
     {
       title: "Bezpieczeństwo Haseł",
-      items: ["Silne hasła", "Menedżery haseł", "Uwierzytelnianie dwuskładnikowe"]
+      items: [
+        {
+          name: "Silne hasła",
+          def: "Silne hasło powinno mieć co najmniej 12 znaków i zawierać kombinację wielkich i małych liter, cyfr oraz symboli specjalnych. Nie powinno zawierać słów słownikowych ani łatwo odgadywalnych informacji."
+        },
+        {
+          name: "Menedżery haseł",
+          def: "Menedżer haseł to aplikacja, która bezpiecznie przechowuje i zarządza hasłami do różnych serwisów. Szyfruje bazę haseł jednym głównym hasłem, dzięki czemu użytkownik musi zapamiętać tylko jedno."
+        },
+        {
+          name: "Uwierzytelnianie dwuskładnikowe",
+          def: "Uwierzytelnianie dwuskładnikowe (2FA) wymaga potwierdzenia tożsamości dwoma niezależnymi metodami: czymś co wiesz (hasło) i czymś co posiadasz (kod SMS, aplikacja TOTP) lub czymś czym jesteś (odcisk palca)."
+        }
+      ]
     },
     {
       title: "Ataki i Zagrożenia",
-      items: ["Phishing", "Man-in-the-Middle", "Ransomware"]
+      items: [
+        {
+          name: "Phishing",
+          def: "Phishing to atak socjotechniczny, w którym cyberprzestępca podszywa się pod zaufaną instytucję i nakłania ofiarę do ujawnienia poufnych danych – haseł, numerów kart – poprzez fałszywe e-maile lub strony WWW."
+        },
+        {
+          name: "Man-in-the-Middle",
+          def: "Atak Man-in-the-Middle (MitM) polega na przechwyceniu komunikacji między dwiema stronami bez ich wiedzy. Atakujący może podsłuchiwać lub modyfikować dane, np. w niezabezpieczonych sieciach Wi-Fi."
+        },
+        {
+          name: "Ransomware",
+          def: "Ransomware to złośliwe oprogramowanie, które szyfruje pliki ofiary i żąda okupu za klucz deszyfrujący. Rozprzestrzenia się przez zainfekowane załączniki e-mail, złośliwe strony lub luki w oprogramowaniu."
+        }
+      ]
     }
   ];
 
   let showScenarioPopup = $state(false);
+  let selectedItem = $state(null); // { name, def, categoryTitle }
 
   function openScenarioPopup() {
     showScenarioPopup = true;
@@ -22,6 +62,14 @@
 
   function closeScenarioPopup() {
     showScenarioPopup = false;
+  }
+
+  function openItemModal(item, categoryTitle) {
+    selectedItem = { ...item, categoryTitle };
+  }
+
+  function closeItemModal() {
+    selectedItem = null;
   }
 </script>
 
@@ -41,7 +89,7 @@
 
     <section class="library-section">
         <div class="chess-pattern-bg"></div>
-        
+
         <div class="library-content">
             <div class="library-header">
                 <div class="header-icon">📚</div>
@@ -56,14 +104,15 @@
                     <ul class="category-items">
                         {#each category.items as item}
                         <li class="category-item">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                <path d="M6 8L8 10L10 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                            {item}
+                            <button class="item-button" onclick={() => openItemModal(item, category.title)}>
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                    <path d="M6 8L8 10L10 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                                {item.name}
+                            </button>
                         </li>
                         {/each}
                     </ul>
-                    <button class="explore-button">Przeglądaj materiały</button>
                 </div>
                 {/each}
             </div>
@@ -74,6 +123,7 @@
         </div>
     </section>
 
+    <!-- Modal: scenariusze zablokowane -->
     {#if showScenarioPopup}
     <div class="modal-overlay"
          role="button"
@@ -84,9 +134,7 @@
              role="dialog"
              onclick={(e) => e.stopPropagation()}
              onkeydown={(e) => e.stopPropagation()}>
-            <button class="modal-close"
-                    onclick={closeScenarioPopup}
-                    aria-label="Zamknij okno">
+            <button class="modal-close" onclick={closeScenarioPopup} aria-label="Zamknij okno">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                     <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                 </svg>
@@ -95,6 +143,30 @@
             <h2 class="modal-title">Scenariusze zablokowane</h2>
             <p class="modal-message">Musisz najpierw ukończyć szkolenie początkowe aby przejść do następnych scenariuszy</p>
             <button class="modal-button" onclick={closeScenarioPopup}>Rozumiem</button>
+        </div>
+    </div>
+    {/if}
+
+    <!-- Modal: definicja itemu -->
+    {#if selectedItem}
+    <div class="modal-overlay"
+         role="button"
+         tabindex="0"
+         onclick={closeItemModal}
+         onkeydown={(e) => e.key === 'Escape' && closeItemModal()}>
+        <div class="modal-content"
+             role="dialog"
+             onclick={(e) => e.stopPropagation()}
+             onkeydown={(e) => e.stopPropagation()}>
+            <button class="modal-close" onclick={closeItemModal} aria-label="Zamknij okno">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </button>
+            <div class="modal-category-tag">{selectedItem.categoryTitle}</div>
+            <h2 class="modal-title">{selectedItem.name}</h2>
+            <p class="modal-message">{selectedItem.def}</p>
+            <button class="modal-button" onclick={closeItemModal}>Zamknij</button>
         </div>
     </div>
     {/if}
@@ -122,6 +194,7 @@ main {
     overflow: hidden;
 }
 
+/* NAV */
 .glass-nav {
     position: fixed;
     top: 20px;
@@ -186,23 +259,21 @@ main {
 .nav-link-active { background: var(--color-primary); color: white; opacity: 1; }
 .nav-link-active:hover { background: #5a6487; color: white; }
 
-.story-section {
+/* LIBRARY SECTION */
+.library-section {
     display: flex;
     align-items: center;
     justify-content: center;
     min-height: 100vh;
-    padding: 120px 2rem 2rem;
+    padding: 120px 2rem 4rem;
     position: relative;
 }
 
 .chess-pattern-bg {
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    top: 0; left: 0; right: 0; bottom: 0;
     opacity: 0.03;
-    background-image: 
+    background-image:
         linear-gradient(45deg, #6A759B 25%, transparent 25%),
         linear-gradient(-45deg, #6A759B 25%, transparent 25%),
         linear-gradient(45deg, transparent 75%, #6A759B 75%),
@@ -211,133 +282,136 @@ main {
     background-position: 0 0, 0 50px, 50px -50px, -50px 0;
 }
 
-.story-content {
-    display: grid;
-    grid-template-columns: 450px 1fr;
-    align-items: center;
-    gap: 4rem;
-    max-width: 1200px;
-    width: 100%;
+.library-content {
+    position: relative;
     z-index: 1;
-}
-
-.king-container {
-    position: relative;
     width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.story-king {
-    width: 100%;
-    max-width: 400px;
-    height: auto;
-    filter: drop-shadow(0 20px 60px rgba(106, 117, 155, 0.3));
-    animation: float 6s ease-in-out infinite;
-    will-change: transform;
-}
-
-.king-glow {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 280px;
-    height: 280px;
-    background: radial-gradient(circle, rgba(106, 117, 155, 0.2) 0%, transparent 70%);
-    border-radius: 50%;
-    animation: pulse 4s ease-in-out infinite;
-}
-
-@keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-20px); }
-}
-
-@keyframes pulse {
-    0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
-    50% { opacity: 0.8; transform: translate(-50%, -50%) scale(1.1); }
-}
-
-.chat-bubble-container {
-    flex: 1;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.chat-bubble {
-    position: relative;
-    background: rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(10px);
-    border: 2px solid rgba(106, 117, 155, 0.2);
-    border-radius: 25px;
-    padding: 2.5rem 3rem;
-    min-width: 350px;
-    min-height: 150px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 10px 40px rgba(106, 117, 155, 0.15);
-    transition: all 0.3s ease;
-}
-
-.chat-bubble-container:hover .chat-bubble {
-    transform: scale(1.02);
-    box-shadow: 0 15px 50px rgba(106, 117, 155, 0.25);
-    border-color: rgba(106, 117, 155, 0.4);
-}
-
-.chat-bubble-container:active .chat-bubble {
-    transform: scale(0.98);
-}
-
-.bubble-text {
-    font-size: 1.6rem;
-    color: var(--color-text);
-    margin: 0;
-    font-weight: 500;
-    line-height: 1.5;
-}
-
-.cursor {
-    animation: blink 1s infinite;
-    margin-left: 2px;
-    color: var(--color-primary);
-}
-
-@keyframes blink {
-    0%, 49% { opacity: 1; }
-    50%, 100% { opacity: 0; }
-}
-
-.bubble-tail {
-    position: absolute;
-    left: -18px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 0;
-    height: 0;
-    border-top: 15px solid transparent;
-    border-bottom: 15px solid transparent;
-    border-right: 20px solid rgba(255, 255, 255, 0.9);
-}
-
-.hint-text {
+    max-width: 1100px;
     text-align: center;
+}
+
+.library-header {
+    margin-bottom: 3rem;
+}
+
+.header-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.library-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--color-text);
+    margin-bottom: 0.75rem;
+}
+
+.library-subtitle {
+    font-size: 1.1rem;
+    color: #6b6f76;
+}
+
+/* CATEGORIES GRID */
+.categories-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.category-card {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: 20px;
+    padding: 2rem 1.5rem;
+    box-shadow: 0 8px 32px rgba(106, 117, 155, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.category-title {
+    font-size: 1.15rem;
+    font-weight: 700;
     color: var(--color-primary);
+    margin-bottom: 1.25rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid rgba(106, 117, 155, 0.15);
+    width: 100%;
+    text-align: center;
+}
+
+.category-items {
+    list-style: none;
+    width: 100%;
+    margin-bottom: 1.5rem;
+    flex: 1;
+}
+
+.category-item {
+    margin-bottom: 0.6rem;
+}
+
+/* Klikalny item */
+.item-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    background: rgba(106, 117, 155, 0.07);
+    border: 1px solid rgba(106, 117, 155, 0.15);
+    border-radius: 10px;
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+    color: var(--color-text);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+}
+
+.item-button:hover {
+    background: rgba(106, 117, 155, 0.18);
+    border-color: rgba(106, 117, 155, 0.4);
+    color: var(--color-primary);
+    transform: translateY(-1px);
+}
+
+.item-button:active {
+    transform: translateY(0);
+}
+
+.item-button svg {
+    flex-shrink: 0;
+    color: var(--color-primary);
+}
+
+.explore-button {
+    background: var(--color-primary);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 0.65rem 1.5rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-top: auto;
+}
+
+.explore-button:hover {
+    background: #5a6487;
+}
+
+.coming-soon {
+    color: #888;
     font-size: 1rem;
-    margin-top: 1.5rem;
-    opacity: 0.8;
-    font-style: italic;
-    animation: fadeInOut 2s ease-in-out infinite;
+    margin-top: 1rem;
 }
 
-@keyframes fadeInOut {
-    0%, 100% { opacity: 0.5; }
-    50% { opacity: 1; }
-}
-
+/* MODAL */
 .modal-overlay {
     position: fixed; inset: 0; z-index: 2000;
     background: rgba(0,0,0,0.45);
@@ -346,15 +420,19 @@ main {
     padding: 1rem;
     animation: fadeInModal 0.2s ease;
 }
+
 .modal-content {
     position: relative;
-    background: white; border-radius: 24px;
+    background: white;
+    border-radius: 24px;
     padding: 2.5rem 2rem 2rem;
-    max-width: 420px; width: 100%;
+    max-width: 440px;
+    width: 100%;
     box-shadow: 0 24px 64px rgba(0,0,0,0.2);
     text-align: center;
     animation: slideUpModal 0.25s ease;
 }
+
 .modal-close {
     position: absolute; top: 1rem; right: 1rem;
     background: transparent; border: none; cursor: pointer;
@@ -362,15 +440,38 @@ main {
     transition: opacity 0.2s;
 }
 .modal-close:hover { opacity: 1; }
+
+.modal-category-tag {
+    display: inline-block;
+    background: rgba(106, 117, 155, 0.12);
+    color: var(--color-primary);
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 0.3rem 0.9rem;
+    border-radius: 50px;
+    margin-bottom: 1rem;
+}
+
 .modal-icon { font-size: 3rem; margin-bottom: 1rem; }
+
 .modal-title {
-    font-size: 1.5rem; font-weight: 700;
-    color: var(--color-primary); margin-bottom: 0.75rem;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    margin-bottom: 0.75rem;
 }
+
 .modal-message {
-    font-size: 1rem; color: var(--color-text);
-    line-height: 1.65; opacity: 0.8; margin-bottom: 1.75rem;
+    font-size: 0.97rem;
+    color: var(--color-text);
+    line-height: 1.7;
+    opacity: 0.85;
+    margin-bottom: 1.75rem;
+    text-align: left;
 }
+
 .modal-button {
     background: var(--color-primary); color: white;
     border: none; border-radius: 50px;
@@ -378,6 +479,7 @@ main {
     cursor: pointer; transition: background 0.2s;
 }
 .modal-button:hover { background: #5a6487; }
+
 @keyframes fadeInModal {
     from { opacity: 0; } to { opacity: 1; }
 }
@@ -386,46 +488,21 @@ main {
     to   { opacity: 1; transform: translateY(0); }
 }
 
-@media (max-width: 968px) {
-    .story-content {
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    .categories-grid {
         grid-template-columns: 1fr;
-        gap: 2rem;
     }
-    
-    .king-container {
-        order: -1;
+    .library-title {
+        font-size: 1.8rem;
     }
-    
-    .chat-bubble {
-        min-width: 300px;
-    }
-    
     .nav-container {
         padding: 0.8rem 1rem;
-    }
-    
-    .page-title {
-        font-size: 1.2rem;
     }
 }
 
 @media (max-width: 640px) {
-    .glass-nav {
-        width: 95%;
-        top: 10px;
-    }
-    
-    .story-king {
-        max-width: 280px;
-    }
-    
-    .chat-bubble {
-        min-width: 250px;
-        padding: 2rem;
-    }
-    
-    .bubble-text {
-        font-size: 1.3rem;
-    }
+    .glass-nav { width: 95%; top: 10px; }
+    .library-section { padding: 100px 1rem 3rem; }
 }
 </style>

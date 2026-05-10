@@ -39,7 +39,7 @@
           <div class="card-accent"></div>
           <h3 class="card-title">Misja</h3>
           <p class="card-text">
-            <strong>en Passant</strong> to projekt konkursowy stworzony na Kościuszkon 2026.
+            <strong>{import.meta.env.VITE_PROJECT_NAME}</strong> to projekt konkursowy stworzony na Kościuszkon 2026.
             Naszym celem jest edukacja w zakresie cyberbezpieczeństwa w formie angażującej narracji —
             bez suchej teorii, za to z interaktywnymi dialogami i wyborami, które mają znaczenie.
           </p>
@@ -106,42 +106,42 @@
         <div class="tech-icons">
          <div class="tech-item">
             <div class="tech-icon-wrap">
-              <img src="/src/lib/assets/HTML5.svg" alt="HTML5" width="48" height="48" />
+              <img src="/HTML5.svg" alt="HTML5" width="48" height="48" />
             </div>
             <span class="tech-name">HTML5</span>
           </div>
 
           <div class="tech-item">
             <div class="tech-icon-wrap">
-              <img src="/src/lib/assets/CSS3.svg" alt="CSS3" width="48" height="48" />
+              <img src="/CSS3.svg" alt="CSS3" width="48" height="48" />
             </div>
             <span class="tech-name">CSS3</span>
           </div>
 
           <div class="tech-item">
             <div class="tech-icon-wrap">
-              <img src="/src/lib/assets/JavaScript.svg" alt="JavaScript" width="48" height="48" />
+              <img src="/JavaScript.svg" alt="JavaScript" width="48" height="48" />
             </div>
             <span class="tech-name">JavaScript</span>
           </div>
 
           <div class="tech-item">
             <div class="tech-icon-wrap">
-              <img src="/src/lib/assets/Svelte.svg" alt="SvelteKit" width="48" height="48" />
+              <img src="/Svelte.svg" alt="SvelteKit" width="48" height="48" />
             </div>
             <span class="tech-name">SvelteKit</span>
           </div>
 
           <div class="tech-item">
             <div class="tech-icon-wrap">
-              <img src="/src/lib/assets/Vite.js.svg" alt="Vite" width="48" height="48" />
+              <img src="/Vite.js.svg" alt="Vite" width="48" height="48" />
             </div>
             <span class="tech-name">Vite</span>
           </div>
 
           <div class="tech-item">
             <div class="tech-icon-wrap">
-              <img src="/src/lib/assets/Java.svg" alt="Java" width="48" height="48" />
+              <img src="/Java.svg" alt="Java" width="48" height="48" />
             </div>
             <span class="tech-name">Java</span>
           </div>

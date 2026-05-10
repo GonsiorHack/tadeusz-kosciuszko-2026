@@ -50,7 +50,7 @@
         
         <div class="story-content">
             <div class="king-container">
-                <img class="story-king" src="/src/lib/assets/whiteKing.svg" alt="White King" />
+                <img class="story-king" src="/whiteKing.svg" alt="White King" />
                 <div class="king-glow"></div>
             </div>
             

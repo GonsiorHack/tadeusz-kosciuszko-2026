@@ -266,7 +266,7 @@
 
     <div class="king-abs-wrap">
       <div class="king-abs-glow"></div>
-      <img class="king-abs-img" src="/src/lib/assets/whiteKing.svg" alt="White King" />
+      <img class="king-abs-img" src="/whiteKing.svg" alt="White King" />
     </div>
   </section>
 </main>

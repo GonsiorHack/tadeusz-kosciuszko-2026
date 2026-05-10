@@ -36,7 +36,7 @@
         
         <div class="hero-content">
             <div class="king-showcase">
-                <img src="/src/lib/assets/whiteKing.svg" alt="White King" class="hero-king" class:king-leaving={isStarting} />
+                <img src="/whiteKing.svg" alt="White King" class="hero-king" class:king-leaving={isStarting} />
                 <div class="king-glow"></div>
             </div>
             

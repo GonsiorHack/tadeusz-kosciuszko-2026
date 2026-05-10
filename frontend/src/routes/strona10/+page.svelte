@@ -262,7 +262,12 @@ const messages = [
 
     <div class="king-abs-wrap">
       <div class="king-abs-glow"></div>
-      <img class="king-abs-img" src="/src/lib/assets/whiteKing.svg" alt="White King" />
+      <img class="king-abs-img" src="/whiteKing.svg" alt="White King" />
+    </div>
+
+    <div class="queen-abs-wrap">
+      <div class="queen-abs-glow"></div>
+      <img class="queen-abs-img" src="/redQueen.svg" alt="Red Queen" />
     </div>
   </section>
 </main>
@@ -731,8 +736,37 @@ main {
 @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
 @keyframes pulse { 0%, 100% { opacity: 0.5; transform: scale(1); } 50% { opacity: 0.9; transform: scale(1.1); } }
 
+.queen-abs-wrap {
+  position: absolute;
+  bottom: 0;
+  right: 4vw;
+  display: flex;
+  align-items: flex-end;
+  pointer-events: none;
+  z-index: 1;
+}
+.queen-abs-img {
+  width: 210px;
+  height: auto;
+  filter: drop-shadow(0 10px 30px rgba(200,30,30,0.35));
+  animation: float 6s ease-in-out infinite;
+  animation-delay: -3s;
+}
+.queen-abs-glow {
+  position: absolute;
+  bottom: 30px;
+  right: 50px;
+  width: 110px;
+  height: 110px;
+  background: radial-gradient(circle, rgba(200,30,30,0.18) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: pulse 4s ease-in-out infinite;
+  animation-delay: -2s;
+}
+
 @media (max-width: 768px) {
   .king-abs-img { width: 150px; }
+  .queen-abs-img { width: 150px; }
   .bubble-text { font-size: 1.2rem; }
   .speech-bubble { padding: 1.4rem 1.8rem; }
   .dialogue-area { margin-bottom: 2rem; padding: 0 1rem; }

@@ -34,3 +34,4 @@ vite.config.ts.timestamp-*
 # --- Logi ---
 *.log
 logs/
+.vercel

@@ -3,12 +3,69 @@
 
   let showConfirm = $state(false);
 
+  // ── Intro cutscene ──
+  let phase = $state('intro');
+  let introIndex = $state(0);
+  let introDisplayed = $state('');
+  let introTyping = $state(false);
+  let introTypeInterval = undefined;
+
+  const introMessages = [
+    { speaker: 'king', text: "Dobra... jeszcze spora droga przed nami, ale widzę, że czynisz postępy, pionku!" },
+    { speaker: 'king', text: "Razem odzy^sk@my mój tron. Nikt n1e będzie m0gł nam st@nąć na drodze, gdy ty opan0wujesz...", partialGlitch: true },
+    { speaker: 'king', text: "daskldhaskladasdj asdjaskld askdal #4%^& !@#$&*", fullGlitch: true },
+    { speaker: 'player', text: "Królu?" },
+    { speaker: 'queen', text: "HAHAHAHA! Niespodziewiłeś się? Twój «król» jest teraz mój! A ty, pionku, jesteś następny.", queenEnter: true },
+  ];
+
+  let currentIntro = $derived(introMessages[introIndex]);
+
+  function typeIntro() {
+    if (introTypeInterval) clearInterval(introTypeInterval);
+    introTyping = true;
+    introDisplayed = '';
+    const msg = introMessages[introIndex];
+    if (msg.fullGlitch) {
+      introDisplayed = msg.text;
+      introTyping = false;
+      return;
+    }
+    const fullText = msg.text;
+    let charIndex = 0;
+    introTypeInterval = setInterval(() => {
+      if (charIndex < fullText.length) {
+        introDisplayed += fullText[charIndex];
+        charIndex++;
+      } else {
+        clearInterval(introTypeInterval);
+        introTyping = false;
+      }
+    }, msg.partialGlitch ? 35 : 50);
+  }
+
+  function advanceIntro() {
+    if (introTyping) {
+      clearInterval(introTypeInterval);
+      introDisplayed = introMessages[introIndex].text;
+      introTyping = false;
+      return;
+    }
+    if (introIndex < introMessages.length - 1) {
+      introIndex++;
+      typeIntro();
+    } else {
+      phase = 'fight';
+    }
+  }
+
   // Stan quizu
   let currentQuestionIndex = $state(0);
   let selectedOption = $state(null);
   let isAnswered = $state(false);
   let score = $state(0);
   let quizFinished = $state(false);
+  const MAX_HP = 3;
+  let playerHP = $state(MAX_HP);
 
   // Zestaw pytań na finałową walkę
   const questions = [
@@ -86,27 +143,44 @@
     }
   ];
 
+  // Kwestie królowej przed odpowiedzią
+  const taunts = [
+    "A król gdzie? Zostawił cię samego?",
+    "Jesteś zwykłym pionkiem. Pionki nie wygrywają.",
+    "Myślisz, że wiedza cię uratuje?",
+    "Widziałam lepszych od ciebie w śmietniku historii.",
+    "Skąd wziąłeś tę odwagę? Skład apteczny?",
+    "Twoja linia obrony jest śmieszna.",
+    "Nikt ci nie pomóże. Jesteś sam.",
+  ];
+
   // Dynamiczny dymek postaci w zależności od sytuacji
   let bossDialogue = $derived(() => {
     if (quizFinished) {
-      return score >= 5 ? "Niemożliwe! Pokonałeś mnie! Znasz moje sekrety!" : "Hahaha! Twoja wiedza jest zbyt słaba. Zostajesz zhakowany!";
+      return playerHP > 0 ? "Niemożliwe! Pokonałeś mnie! Znasz moje sekrety!" : "Szach-mat, pionku. Kończ się tu twoja historia.";
     }
-    if (!isAnswered) return "Przygotuj się na cios! " + (currentQuestionIndex + 1) + " / " + questions.length;
+    if (!isAnswered) return taunts[currentQuestionIndex % taunts.length];
     if (selectedOption === questions[currentQuestionIndex].correctIndex) return "Agh! Jak mogłeś to wiedzieć?!";
     return "Hahaha! Błędna odpowiedź! Mój szyfr jest nie do złamania!";
   });
 
   function selectOption(index) {
-    if (isAnswered) return; // Zablokuj klikanie po udzieleniu odpowiedzi
+    if (isAnswered) return;
     selectedOption = index;
     isAnswered = true;
-    
+
     if (index === questions[currentQuestionIndex].correctIndex) {
       score++;
+    } else {
+      playerHP = Math.max(0, playerHP - 1);
     }
   }
 
   function nextQuestion() {
+    if (playerHP <= 0) {
+      quizFinished = true;
+      return;
+    }
     if (currentQuestionIndex < questions.length - 1) {
       currentQuestionIndex++;
       selectedOption = null;
@@ -116,7 +190,20 @@
     }
   }
 
+  function resetGame() {
+    currentQuestionIndex = 0;
+    selectedOption = null;
+    isAnswered = false;
+    score = 0;
+    quizFinished = false;
+    playerHP = MAX_HP;
+  }
+
   function handleKeydown(e) {
+    if (phase === 'intro') {
+      if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); advanceIntro(); }
+      return;
+    }
     if (showConfirm) {
       if (e.key === 'Escape') { e.preventDefault(); showConfirm = false; }
       return;
@@ -125,32 +212,119 @@
       e.preventDefault();
       if (isAnswered && !quizFinished) {
         nextQuestion();
-      } else if (quizFinished) {
-        location.href = '/strona10'; // <- Zmień na to, co ma być po walce
+      } else if (quizFinished && playerHP > 0) {
+        location.href = '/strona10';
+      } else if (quizFinished && playerHP <= 0) {
+        resetGame();
       }
     }
   }
 
   onMount(() => {
+    typeIntro();
     window.addEventListener('keydown', handleKeydown);
     return () => {
+      if (introTypeInterval) clearInterval(introTypeInterval);
       window.removeEventListener('keydown', handleKeydown);
     };
   });
 </script>
 
-<main class="boss-fight-bg">
-  <nav class="glass-nav" style="border-bottom-color: rgba(255,100,100,0.3);">
+{#if phase === 'intro'}
+<main class="intro-main" class:intro-queen-active={currentIntro?.queenEnter}>
+  <nav class="glass-nav" class:intro-nav-queen={currentIntro?.queenEnter}>
     <div class="nav-container">
-      <button class="back-button" aria-label="Cofnij" disabled style="opacity: 0.5; cursor: not-allowed;">
+      <button class="back-button" onclick={() => location.href='/strona8'} aria-label="Cofnij">
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
           <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </button>
-      <button class="page-title-btn" style="color: #e05a5a;">
-        WALKA Z KRÓLOWĄ
+      <button class="page-title-btn" onclick={() => showConfirm = true}>
+        {import.meta.env.VITE_APP_NAME}
       </button>
-      <div class="page-counter" style="color: #e05a5a;">HP: {score} / {questions.length}</div>
+      <div style="width: 80px"></div>
+    </div>
+  </nav>
+
+  {#if showConfirm}
+  <div class="confirm-overlay"
+       role="dialog"
+       aria-modal="true"
+       onkeydown={(e) => e.key === 'Escape' && (showConfirm = false)}>
+    <div class="confirm-box">
+      <p class="confirm-msg">Czy jesteś pewny? Postęp tej sesji zostanie utracony.</p>
+      <div class="confirm-btns">
+        <button class="confirm-yes" onclick={() => { sessionStorage.clear(); location.href = '/'; }}>Tak, wróć do menu</button>
+        <button class="confirm-no" onclick={() => showConfirm = false}>Nie, kontynuuj</button>
+      </div>
+    </div>
+  </div>
+  {/if}
+
+  <section class="story-section">
+    <div class="chess-pattern-bg"></div>
+
+    <div class="right-panel intro-right-panel">
+      <div class="intro-dialogue"
+           onclick={advanceIntro}
+           onkeydown={(e) => (e.key === 'Enter' || e.key === ' ') && advanceIntro()}
+           role="button"
+           tabindex="0">
+        <div class="speech-bubble"
+             class:intro-bubble-glitch={currentIntro?.fullGlitch}
+             class:intro-bubble-partial={currentIntro?.partialGlitch}
+             class:intro-bubble-queen={currentIntro?.queenEnter}
+             class:intro-bubble-player={currentIntro?.speaker === 'player'}>
+          <p class="bubble-text"
+             class:glitch-text-anim={currentIntro?.fullGlitch}
+             class:queen-intro-text={currentIntro?.queenEnter}>
+            {introDisplayed}{introTyping && !currentIntro?.fullGlitch ? '◌' : ''}
+          </p>
+        </div>
+        <p class="hint-text">
+          {introTyping ? 'Skip' : introIndex < introMessages.length - 1 ? 'Kontynuuj →' : 'Do walki →'}
+        </p>
+      </div>
+    </div>
+
+    {#if currentIntro?.queenEnter}
+      <div class="queen-intro-wrap">
+        <div class="queen-intro-glow"></div>
+        <img class="queen-intro-img" src="/redQueen.svg" alt="Wroga Królowa" />
+      </div>
+    {:else}
+      <div class="king-abs-wrap"
+           class:king-glitching={currentIntro?.fullGlitch}
+           class:king-partial-glitch={currentIntro?.partialGlitch}>
+        <div class="king-abs-glow"></div>
+        <img class="king-abs-img" src="/whiteKing.svg" alt="Biały Król" />
+      </div>
+    {/if}
+  </section>
+</main>
+{:else}
+<main class="boss-fight-bg">
+  <nav class="glass-nav boss-nav">
+    <div class="nav-container">
+      <button class="back-button boss-back" aria-label="Cofnij" disabled>
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <span class="boss-title">
+        <span class="boss-title-crown" aria-hidden="true">♛</span>
+        <span class="boss-title-text">WALKA Z KRÓLOWĄ</span>
+        <span class="boss-title-crown" aria-hidden="true">♛</span>
+      </span>
+      <div class="hp-hearts">
+        {#each Array(MAX_HP) as _, i}
+          <span class="heart" class:heart-lost={i >= playerHP}>
+            <svg width="26" height="26" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#e05a5a"/>
+            </svg>
+          </span>
+        {/each}
+      </div>
     </div>
   </nav>
 
@@ -195,65 +369,68 @@
           </div>
 
           {#if isAnswered}
-            <div style="margin-top: 1.5rem; padding: 1rem; background: rgba(106,117,155,0.08); border-radius: 12px; border-left: 4px solid {selectedOption === questions[currentQuestionIndex].correctIndex ? '#3cb464' : '#e05a5a'}; animation: wsFadeIn 0.3s ease;">
-              <strong style="display: block; margin-bottom: 0.3rem; color: {selectedOption === questions[currentQuestionIndex].correctIndex ? '#3cb464' : '#e05a5a'};">
-                {selectedOption === questions[currentQuestionIndex].correctIndex ? 'Dobry cios!' : 'Pudło!'}
-              </strong>
-              <span style="font-size: 0.9rem; color: var(--color-text);">{questions[currentQuestionIndex].explanation}</span>
+            <div class="feedback-box" class:feedback-hit={selectedOption === questions[currentQuestionIndex].correctIndex} class:feedback-miss={selectedOption !== questions[currentQuestionIndex].correctIndex}>
+              <span class="feedback-label">
+                {selectedOption === questions[currentQuestionIndex].correctIndex ? '⚔️ Celny cios! Królowa dostała cios!' : '💀 Chybiony! Straciłeś życie!'}
+              </span>
+              <span class="feedback-explain">{questions[currentQuestionIndex].explanation}</span>
             </div>
 
-            <button 
-              onclick={nextQuestion}
-              style="margin-top: 1rem; width: 100%; padding: 1rem; background: #2a2a2a; color: white; border-radius: 8px; font-weight: bold; border: none; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; transition: 0.2s;"
-            >
-              {currentQuestionIndex < questions.length - 1 ? 'Następne pytanie' : 'Zakończ walkę'}
+            <button onclick={nextQuestion} class="next-btn">
+              {playerHP <= 0 ? 'Koniec walki…' : currentQuestionIndex < questions.length - 1 ? 'Następne pytanie ⚔️' : 'Zakończ walkę ♛'}
             </button>
           {/if}
 
         {:else}
-          <div style="text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%;">
-            <span style="font-size: 4rem; margin-bottom: 1rem;">
-              {score >= 5 ? '🏆' : '💀'}
-            </span>
-            <h2 style="font-size: 2rem; color: #2a2a2a; margin-bottom: 0.5rem;">
-              {score >= 5 ? 'Zwycięstwo!' : 'Porażka...'}
+          <div style="text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; gap: 0.5rem;">
+            {#if playerHP <= 0}
+              <p class="szach-mat-label">SZACH-MAT</p>
+            {:else}
+              <span style="font-size: 4rem; margin-bottom: 0.5rem;">🏆</span>
+            {/if}
+            <h2 style="font-size: 2rem; color: {playerHP > 0 ? '#2a6e3f' : '#b83a3a'}; margin-bottom: 0.25rem;">
+              {playerHP > 0 ? 'Zwycięstwo!' : 'Porażka...'}
             </h2>
-            <p style="font-size: 1.2rem; color: var(--color-text); margin-bottom: 2rem;">
-              Twój wynik: <strong>{score} / {questions.length}</strong>
+            <p style="font-size: 1rem; color: var(--color-text); opacity: 0.75;">
+              Poprawne odpowiedzi: <strong>{score} / {questions.length}</strong>
             </p>
-            
+            <div style="display: flex; gap: 6px; margin: 0.5rem 0 1.5rem;">
+              {#each Array(MAX_HP) as _, i}
+                <span class="heart" class:heart-lost={i >= playerHP}>
+                  <svg width="28" height="28" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#e05a5a"/>
+                  </svg>
+                </span>
+              {/each}
+            </div>
             <button 
-              onclick={() => location.href = '/strona10'}
-              style="padding: 1rem 2rem; background: var(--color-primary); color: white; border-radius: 8px; font-weight: bold; border: none; cursor: pointer; text-transform: uppercase; letter-spacing: 1px;"
+              onclick={() => playerHP > 0 ? location.href = '/strona10' : resetGame()}
+              style="padding: 1rem 2rem; background: {playerHP > 0 ? 'var(--color-primary)' : '#e05a5a'}; color: white; border-radius: 8px; font-weight: bold; border: none; cursor: pointer; text-transform: uppercase; letter-spacing: 1px;"
             >
-              Zakończ walkę
+              {playerHP > 0 ? 'Dalej →' : 'Spróbuj jeszcze raz'}
             </button>
           </div>
         {/if}
 
       </div>
 
-      <div class="dialogue-area" onclick={() => isAnswered && !quizFinished && nextQuestion()} style="cursor: {isAnswered && !quizFinished ? 'pointer' : 'default'}">
-        <div class="speech-bubble" style="border-color: rgba(224, 90, 90, 0.4);">
-          <p class="bubble-text" style="color: #5a2020; font-weight: bold;">{bossDialogue()}</p>
-        </div>
-        {#if isAnswered && !quizFinished}
-          <p class="hint-text" style="color: #e05a5a;">Kliknij Spację, by zadać kolejny cios →</p>
-        {/if}
-      </div>
+      {#if isAnswered && !quizFinished}
+        <p class="hint-text" style="color: #e05a5a; text-align: center;">Kliknij Spację, by zadać kolejny cios →</p>
+      {/if}
     </div>
 
-    <div class="king-abs-wrap">
-      <div class="king-abs-glow" style="background: radial-gradient(circle, rgba(224, 90, 90, 0.3) 0%, transparent 70%);"></div>
-      <img 
-        class="king-abs-img boss-img" 
-        src="/src/lib/assets/whiteKing.svg" 
-        alt="Wroga Królowa" 
-        style="filter: drop-shadow(0 10px 30px rgba(224, 90, 90, 0.4)) invert(0.8) hue-rotate(180deg);" 
-      />
+    <div class="queen-scene">
+      {#key currentQuestionIndex + '_' + (isAnswered ? selectedOption : -1)}
+        <div class="queen-speech">
+          <p class="queen-bubble-text">{bossDialogue()}</p>
+        </div>
+      {/key}
+      <div class="queen-glow"></div>
+      <img class="queen-img boss-img" src="/redQueen.svg" alt="Wroga Królowa" />
     </div>
   </section>
 </main>
+{/if}
 
 <style>
 :global(.boss-fight-bg) {
@@ -473,7 +650,7 @@ main {
 .right-panel {
   position: absolute;
   top: 80px;
-  left: calc(4vw + 210px + 2rem);
+  left: calc(4vw + 320px + 2rem);
   right: 2.5rem;
   bottom: 0;
   display: flex;
@@ -700,7 +877,265 @@ main {
 
 .ws-note { font-size: 0.86rem; color: var(--color-primary); font-style: italic; opacity: 0.72; padding: 0.55rem 1rem; background: rgba(106,117,155,0.06); border-radius: 10px; border-left: 3px solid rgba(106,117,155,0.28); }
 
-.dialogue-area {
+.queen-scene {
+  position: absolute;
+  bottom: 0;
+  left: 4vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+  z-index: 3;
+}
+.queen-img {
+  width: 320px;
+  height: auto;
+  filter: drop-shadow(0 10px 40px rgba(200,30,30,0.45));
+}
+.queen-glow {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 180px;
+  height: 80px;
+  background: radial-gradient(ellipse, rgba(200,30,30,0.22) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: pulse 4s ease-in-out infinite;
+  z-index: -1;
+}
+.queen-speech {
+  background: rgba(20, 5, 5, 0.88);
+  border: 1.5px solid rgba(224,90,90,0.6);
+  border-radius: 14px;
+  padding: 0.75rem 1.1rem;
+  max-width: 300px;
+  min-width: 180px;
+  box-shadow: 0 6px 24px rgba(200,30,30,0.3), inset 0 1px 0 rgba(255,255,255,0.05);
+  position: relative;
+  margin-bottom: 14px;
+  animation: queenSpeechPop 0.35s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+.queen-speech::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 12px solid rgba(20,5,5,0.88);
+}
+.queen-speech::before {
+  content: '';
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 12px solid transparent;
+  border-right: 12px solid transparent;
+  border-top: 13px solid rgba(224,90,90,0.6);
+}
+@keyframes queenSpeechPop {
+  from { transform: scale(0.8) translateY(8px); opacity: 0; }
+  to   { transform: scale(1) translateY(0); opacity: 1; }
+}
+.queen-bubble-text {
+  font-size: 0.92rem;
+  color: #f5d0d0;
+  font-weight: 600;
+  line-height: 1.45;
+  text-align: center;
+  font-style: italic;
+}
+
+.feedback-box {
+  margin-top: 1rem;
+  padding: 0.9rem 1.2rem;
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  animation: wsFadeIn 0.3s ease both;
+  border-left: 4px solid transparent;
+}
+.feedback-hit {
+  background: rgba(40, 160, 90, 0.1);
+  border-left-color: #3cb464;
+}
+.feedback-miss {
+  background: rgba(200, 40, 40, 0.09);
+  border-left-color: #e05a5a;
+}
+.feedback-label {
+  display: block;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+}
+.feedback-hit .feedback-label { color: #2a7a48; }
+.feedback-miss .feedback-label { color: #b83a3a; }
+.feedback-explain {
+  font-size: 0.88rem;
+  color: var(--color-text);
+  opacity: 0.8;
+  line-height: 1.5;
+}
+.next-btn {
+  margin-top: 0.75rem;
+  width: 100%;
+  padding: 0.9rem 1rem;
+  background: linear-gradient(135deg, #2a0808, #4a1010);
+  color: #f5d0d0;
+  border-radius: 10px;
+  font-weight: 800;
+  border: 1px solid rgba(224,90,90,0.4);
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-size: 0.85rem;
+  transition: all 0.2s;
+  box-shadow: 0 4px 16px rgba(200,30,30,0.25);
+}
+.next-btn:hover { background: linear-gradient(135deg, #3a0a0a, #5e1414); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(200,30,30,0.35); }
+.hint-text {
+  color: var(--color-primary);
+  font-size: 0.9rem;
+  font-style: italic;
+  opacity: 0.75;
+  min-height: 1.2em;
+  animation: fadeInOut 2s ease-in-out infinite;
+  text-align: center;
+}
+
+@keyframes fadeInOut { 0%, 100% { opacity: 0.4; } 50% { opacity: 0.9; } }
+@keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+@keyframes pulse { 0%, 100% { opacity: 0.5; transform: scale(1); } 50% { opacity: 0.9; transform: scale(1.1); } }
+
+.boss-nav {
+  background: rgba(30, 10, 10, 0.88) !important;
+  border-bottom: 1px solid rgba(224, 90, 90, 0.4) !important;
+  box-shadow: 0 4px 32px rgba(200, 30, 30, 0.25) !important;
+}
+.boss-back {
+  border-color: rgba(224,90,90,0.4);
+  color: rgba(224,90,90,0.5);
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+.boss-title {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-family: 'Georgia', 'Palatino Linotype', serif;
+  font-size: 1.4rem;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #e05a5a;
+  text-shadow: 0 0 18px rgba(224,90,90,0.7), 0 0 40px rgba(180,20,20,0.4);
+  animation: bossFlicker 3s ease-in-out infinite;
+  user-select: none;
+}
+.boss-title-crown {
+  font-size: 1.5rem;
+  animation: crownBob 2s ease-in-out infinite;
+  display: inline-block;
+  filter: drop-shadow(0 0 6px rgba(224,90,90,0.8));
+}
+.boss-title-crown:last-child {
+  animation-delay: -1s;
+}
+@keyframes bossFlicker {
+  0%, 100% { text-shadow: 0 0 18px rgba(224,90,90,0.7), 0 0 40px rgba(180,20,20,0.4); opacity: 1; }
+  45% { text-shadow: 0 0 8px rgba(224,90,90,0.4), 0 0 20px rgba(180,20,20,0.2); opacity: 0.85; }
+  50% { text-shadow: 0 0 28px rgba(224,90,90,1), 0 0 60px rgba(200,30,30,0.6); opacity: 1; }
+  95% { text-shadow: 0 0 14px rgba(224,90,90,0.5), 0 0 30px rgba(180,20,20,0.3); opacity: 0.9; }
+}
+@keyframes crownBob {
+  0%, 100% { transform: translateY(0) rotate(-5deg); }
+  50% { transform: translateY(-4px) rotate(5deg); }
+}
+
+.szach-mat-label {
+  font-family: 'Georgia', 'Palatino Linotype', serif;
+  font-size: 3.5rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  color: #b83a3a;
+  text-shadow: 0 0 30px rgba(200,30,30,0.6), 0 4px 0 rgba(0,0,0,0.18);
+  animation: szachMatPop 0.6s cubic-bezier(0.34,1.56,0.64,1) both;
+  margin-bottom: 0.25rem;
+}
+@keyframes szachMatPop {
+  from { transform: scale(0.5) rotate(-8deg); opacity: 0; }
+  to   { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+.hp-hearts {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+.heart {
+  display: inline-flex;
+  transition: transform 0.35s cubic-bezier(0.36, 0.07, 0.19, 0.97), opacity 0.35s ease;
+  transform-origin: center;
+}
+.heart-lost {
+  opacity: 0;
+  transform: scale(0) rotate(-30deg);
+}
+
+@media (max-width: 768px) {
+  .king-abs-img { width: 150px; }
+  .bubble-text { font-size: 1.2rem; }
+  .speech-bubble { padding: 1.4rem 1.8rem; }
+  .dialogue-area { margin-bottom: 2rem; padding: 0 1rem; }
+}
+
+.speech-bubble {
+  width: 100%;
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(106,117,155,0.2);
+  border-radius: 20px;
+  padding: 1.8rem 2.5rem;
+  box-shadow: 0 10px 40px rgba(106,117,155,0.15);
+  cursor: pointer;
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+  position: relative;
+}
+.speech-bubble:hover { box-shadow: 0 15px 50px rgba(106,117,155,0.25); border-color: rgba(106,117,155,0.4); }
+.bubble-text {
+  font-size: 1.45rem;
+  color: var(--color-text);
+  font-weight: 500;
+  line-height: 1.5;
+  text-align: center;
+}
+
+/* ── INTRO CUTSCENE ── */
+.intro-main {
+  height: 100vh;
+  background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 50%, #f0f0f0 100%);
+  position: relative;
+  overflow: hidden;
+  transition: background 0.6s ease;
+}
+.intro-queen-active {
+  background: linear-gradient(135deg, #f5eaea 0%, #e8d8d8 50%, #f0e4e4 100%);
+}
+.intro-nav-queen {
+  background: rgba(40, 10, 10, 0.82) !important;
+  border-bottom-color: rgba(200, 60, 60, 0.5) !important;
+  box-shadow: 0 4px 24px rgba(180, 20, 20, 0.25) !important;
+}
+.intro-right-panel {
+  left: calc(4vw + 210px + 2rem) !important;
+  justify-content: flex-end;
+}
+.intro-dialogue {
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
@@ -708,15 +1143,52 @@ main {
   cursor: pointer;
 }
 
-.king-abs-wrap {
-  position: absolute;
-  bottom: 0;
-  left: 4vw;
-  display: flex;
-  align-items: flex-end;
-  pointer-events: none;
-  z-index: 1;
+/* Bubble variants for intro */
+.intro-bubble-glitch {
+  border-color: rgba(200, 40, 40, 0.75) !important;
+  background: rgba(255, 236, 236, 0.97) !important;
+  animation: bubbleShake 0.11s linear infinite !important;
 }
+.intro-bubble-partial {
+  border-color: rgba(180, 90, 90, 0.45) !important;
+}
+.intro-bubble-queen {
+  background: rgba(18, 4, 4, 0.94) !important;
+  border-color: rgba(224, 90, 90, 0.85) !important;
+  box-shadow: 0 0 55px rgba(200, 30, 30, 0.45), 0 10px 40px rgba(180,20,20,0.3) !important;
+}
+.intro-bubble-player .bubble-text {
+  font-style: italic;
+  color: #555 !important;
+  font-size: 2rem !important;
+  font-weight: 600 !important;
+  text-align: center;
+}
+.queen-intro-text {
+  color: #f5c0c0 !important;
+  font-weight: 700;
+}
+
+/* Glitch text animation */
+@keyframes glitchText {
+  0%   { transform: none; text-shadow: none; color: #b83a3a; }
+  18%  { transform: translate(-3px, 1px) skewX(-4deg); text-shadow: 3px 0 #ff0033, -3px 0 #0033ff; color: #ff2200; }
+  36%  { transform: translate(3px, -1px) skewX(3deg); text-shadow: -2px 0 #ff0033; color: #333; }
+  54%  { transform: translate(-2px, 2px); text-shadow: 2px 0 #00ff99; color: #aa0000; }
+  72%  { transform: translate(2px, -2px) skewX(-2deg); text-shadow: -1px 0 #ff0033; color: #ff4400; }
+  100% { transform: none; text-shadow: none; color: #b83a3a; }
+}
+.glitch-text-anim {
+  animation: glitchText 0.28s steps(1) infinite;
+  font-family: 'Courier New', monospace;
+}
+@keyframes bubbleShake {
+  0%, 100% { transform: translate(0); }
+  25%  { transform: translate(-3px, -1px) rotate(-0.5deg); }
+  75%  { transform: translate(3px, 1px) rotate(0.5deg); }
+}
+
+/* King glitch effects */
 .king-abs-img {
   width: 210px;
   height: auto;
@@ -733,69 +1205,57 @@ main {
   border-radius: 50%;
   animation: pulse 4s ease-in-out infinite;
 }
-
-.speech-bubble {
-  width: 100%;
-  background: rgba(255,255,255,0.95);
-  backdrop-filter: blur(10px);
-  border: 2px solid rgba(106,117,155,0.2);
-  border-radius: 20px;
-  padding: 1.8rem 2.5rem;
+.king-abs-wrap {
+  position: absolute;
+  bottom: 0;
+  left: 4vw;
   display: flex;
-  align-items: flex-start;
-  justify-content: flex-start;
-  box-shadow: 0 10px 40px rgba(106,117,155,0.15);
-  cursor: pointer;
-  transition: box-shadow 0.3s ease, border-color 0.3s ease;
-  position: relative;
+  align-items: flex-end;
+  pointer-events: none;
+  z-index: 1;
 }
-.speech-bubble::before {
-  content: '';
-  position: absolute;
-  bottom: -1px;
-  left: -18px;
-  width: 0; height: 0;
-  border-top: 12px solid transparent;
-  border-bottom: 0px solid transparent;
-  border-right: 20px solid rgba(106,117,155,0.2);
-  filter: drop-shadow(-2px 1px 1px rgba(106,117,155,0.1));
+.king-glitching .king-abs-img {
+  animation: kingGlitch 0.32s steps(1) infinite !important;
 }
-.speech-bubble::after {
-  content: '';
-  position: absolute;
-  bottom: 1px;
-  left: -14px;
-  width: 0; height: 0;
-  border-top: 10px solid transparent;
-  border-bottom: 0px solid transparent;
-  border-right: 18px solid rgba(255,255,255,0.97);
+.king-partial-glitch .king-abs-img {
+  filter: drop-shadow(0 10px 30px rgba(160, 60, 60, 0.5)) !important;
 }
-.speech-bubble:hover { box-shadow: 0 15px 50px rgba(106,117,155,0.25); border-color: rgba(106,117,155,0.4); }
-.bubble-text {
-  font-size: 1.45rem;
-  color: var(--color-text);
-  font-weight: 500;
-  line-height: 1.5;
-  text-align: center;
-}
-.hint-text {
-  color: var(--color-primary);
-  font-size: 0.9rem;
-  font-style: italic;
-  opacity: 0.75;
-  min-height: 1.2em;
-  animation: fadeInOut 2s ease-in-out infinite;
-  text-align: center;
+@keyframes kingGlitch {
+  0%   { filter: drop-shadow(0 10px 30px rgba(200,30,30,0.3)) brightness(0.9); transform: translate(0); }
+  20%  { filter: drop-shadow(-5px 0 0 #ff0033) drop-shadow(5px 0 0 #0033ff) brightness(1.45); transform: translate(-4px, 2px); }
+  40%  { filter: drop-shadow(0 10px 30px rgba(200,30,30,0.7)) brightness(0.6); transform: translate(3px, -2px); }
+  60%  { filter: drop-shadow(5px 0 10px #ff3300) brightness(1.25); transform: translate(-2px, 1px); }
+  80%  { filter: drop-shadow(0 0 28px rgba(200,30,30,0.95)) brightness(0.75); transform: translate(2px, 3px); }
+  100% { filter: drop-shadow(0 10px 30px rgba(200,30,30,0.3)) brightness(0.9); transform: translate(0); }
 }
 
-@keyframes fadeInOut { 0%, 100% { opacity: 0.4; } 50% { opacity: 0.9; } }
-@keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
-@keyframes pulse { 0%, 100% { opacity: 0.5; transform: scale(1); } 50% { opacity: 0.9; transform: scale(1.1); } }
-
-@media (max-width: 768px) {
-  .king-abs-img { width: 150px; }
-  .bubble-text { font-size: 1.2rem; }
-  .speech-bubble { padding: 1.4rem 1.8rem; }
-  .dialogue-area { margin-bottom: 2rem; padding: 0 1rem; }
+/* Queen dramatic entrance */
+.queen-intro-wrap {
+  position: absolute;
+  bottom: 0;
+  left: 4vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+  z-index: 3;
+}
+.queen-intro-img {
+  width: 260px;
+  height: auto;
+  filter: drop-shadow(0 10px 40px rgba(200,30,30,0.55));
+  animation: queenBurst 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both, floatBoss 4s ease-in-out 0.55s infinite;
+}
+@keyframes queenBurst {
+  from { transform: translateX(-130%) scale(0.65) rotate(-14deg); opacity: 0; }
+  to   { transform: translateX(0) scale(1) rotate(0deg); opacity: 1; }
+}
+.queen-intro-glow {
+  width: 150px;
+  height: 55px;
+  background: radial-gradient(ellipse, rgba(200,30,30,0.3) 0%, transparent 70%);
+  border-radius: 50%;
+  margin-bottom: -20px;
+  animation: pulse 4s ease-in-out infinite;
 }
 </style>

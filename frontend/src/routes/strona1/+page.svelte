@@ -219,7 +219,7 @@
            style={choiceSelected ? 'cursor: pointer' : ''}>
         <div class="center-king-wrap">
           <div class="center-king-glow"></div>
-          <img class="center-king-img king-float" src="/src/lib/assets/whiteKing.svg" alt="White King"/>
+          <img class="center-king-img king-float" src="/whiteKing.svg" alt="White King"/>
         </div>
         <div class="center-dialogue">
           {#if showChoices}
@@ -265,7 +265,7 @@
             class="king-img"
             class:king-entrance={!kingEntranceDone}
             class:king-float={kingEntranceDone}
-            src="/src/lib/assets/whiteKing.svg"
+            src="/whiteKing.svg"
             alt="White King"
           />
         </div>

@@ -1,18 +1,17 @@
 <script lang="ts">
 	import './layout.css';
-	import favicon from '$lib/assets/faviconDark.svg';
 
 	let { children } = $props();
 </script>
 
-<svelte:head><link rel="icon" href={favicon} /></svelte:head>
+<svelte:head><link rel="icon" href="/faviconDark.svg" /></svelte:head>
 {@render children()}
 
 <footer class="site-footer">
 	<div class="footer-inner">
 		<div class="footer-left">
-			<span class="footer-brand">en Passant</span>
-			<span class="footer-tagline">Projekt edukacyjny z zakresu cyberbezpieczeństwa</span>
+			<span class="footer-brand">{import.meta.env.VITE_PROJECT_NAME}</span>
+			<span class="footer-tagline">{import.meta.env.VITE_PROJECT_TAGLINE}</span>
 		</div>
 		<div class="footer-links">
 			<a class="footer-link" href={import.meta.env.VITE_REPO_URL} target="_blank" rel="noopener noreferrer">

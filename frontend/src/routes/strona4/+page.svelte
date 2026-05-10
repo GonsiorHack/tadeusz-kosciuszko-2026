@@ -57,7 +57,7 @@
 
     // Jeśli zadanie jest już rozwiązane, przechodzimy dalej
     if (isSuccess) {
-      location.href = '/strona5';
+      location.href = '/stronaCiekawostka1';
       return;
     }
 

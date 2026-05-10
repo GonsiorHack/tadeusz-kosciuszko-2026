@@ -69,7 +69,7 @@
     }
 
     if (isSuccess) {
-      location.href = '/strona8'; // Przejście do kolejnej lekcji
+      location.href = '/stronaCiekawostka2';
       return;
     }
 

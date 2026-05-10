@@ -14,8 +14,6 @@
   const messages = [
     { text: "Doskonale sobie poradziłeś!" },
     { text: "Zanim przejdziemy dalej, poprosiłem mojego nadwornego maga – Sztuczną Inteligencję – o przygotowanie czegoś specjalnego." },
-    { text: "Skup się, mag właśnie w tej chwili przeszukuje swoje zwoje i generuje dla Ciebie unikalną ciekawostkę..." },
-    { text: "Oto i ona! Przeczytaj uważnie na panelu obok." }
   ];
 
   let currentMessageIndex = $state(0);

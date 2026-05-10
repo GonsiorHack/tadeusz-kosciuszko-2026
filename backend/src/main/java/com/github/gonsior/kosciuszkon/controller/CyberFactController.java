@@ -21,7 +21,7 @@ public class CyberFactController {
                 "Wciel się w rolę fascynującego historyka i nadwornego maga tajemnic. " +
                         "Twoim zadaniem jest opowiedzieć jedną niezwykle ciekawą, mało znaną anegdotę z historii kryptografii na temat: %s. " +
                         "ZASADY: " +
-                        "1. CAŁKOWITY ZAKAZ wspominania o internecie, komputerach, AES, kłódkach czy sejfach. " +
+                        "1. CAŁKOWITY ZAKAZ wspominania o internecie, komputerach, AES, kłódkach, sejfach czy cyfsze cezara. " +
                         "2. Skup się na prawdziwych historiach: starożytność, wojny, Enigma, szpiedzy, fizyczne maszyny szyfrujące, niezwykłe metody ukrywania wiadomości. " +
                         "3. Pisz obrazowo, jakbyś opowiadał tajemniczą legendę. Używaj prostego języka. " +
                         "4. Zwracaj się bezpośrednio do słuchacza (np. 'Czy wiesz, że...', 'Wyobraź sobie...'). Maksymalnie 3 zdania. " +

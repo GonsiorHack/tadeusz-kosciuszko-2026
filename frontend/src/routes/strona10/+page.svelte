@@ -6,24 +6,72 @@
   let typeInterval = undefined;
   let showConfirm = $state(false);
 
-  // Zmienne do obsługi backendu / AI
-  let aiTrivia = $state('');
-  let isLoading = $state(true);
-  let fetchError = $state(false);
-
-  const messages = [
-    { text: "Doskonale sobie poradziłeś!" },
-    { text: "Zanim przejdziemy dalej, poprosiłem mojego nadwornego maga – Sztuczną Inteligencję – o przygotowanie czegoś specjalnego." },
-    { text: "Skup się, mag właśnie w tej chwili przeszukuje swoje zwoje i generuje dla Ciebie unikalną ciekawostkę..." },
-    { text: "Oto i ona! Przeczytaj uważnie na panelu obok." }
+const messages = [
+    { text: "Udało się! Królowa została pokonana, a jej mroczne algorytmy przestały zagrażać naszemu królestwu." },
+    { text: "Przeszedłeś niesamowitą drogę – od starożytnego Szyfru Cezara, aż po nowoczesne algorytmy w tym ECC." },
+    { text: "Zrozumiałeś, dlaczego jeden klucz symetryczny to czasem za mało i jak asymetria z dwiema kłódkami zmieniła świat." },
+    { text: "W nagrodę za Twoje męstwo, nadaję Ci tytuł Mistrza Kryptografii." },
+    { text: "Teraz możesz śmiało i bezpiecznie wyruszyć w cyfrowy świat. Dziękuję Ci za wspólną podróż, bohaterze!" },
   ];
 
   let currentMessageIndex = $state(0);
 
-  function typeText(fullText) {
+ const workspace = [
+    null, // Wiadomość 1: Tylko dialog zwycięstwa, brak panelu
+    {
+      tag: 'Podsumowanie',
+      layout: 'steps',
+      title: 'Twoja Ścieżka Edukacji',
+      content: 'Oto kamienie milowe, które zaliczyłeś podczas szkolenia:',
+      steps: [
+        'Zrozumienie podstaw kryptografii',
+        'Poznanie historii i łamanie Szyfru Cezara',
+        'Opanowanie szyfrów symetrycznych (AES i ChaCha20)',
+        'Rozwiązanie problemu dystrybucji klucza',
+        'Zrozumienie asymetrii (RSA oraz krzywe eliptyczne ECC)'
+      ]
+    },
+    {
+      tag: 'Awans',
+      layout: 'stat',
+      title: 'Nowy Status',
+      stat: 'Mistrz',
+      stat_label: 'Kryptografii',
+      content: 'Zaliczyłeś wszystkie testy i pokonałeś Królową w ostatecznym starciu. Twoja wiedza o zabezpieczaniu danych jest teraz na najwyższym poziomie.',
+      note: 'Jesteś gotowy, by chronić swoje sekrety w sieci.'
+    },
+    {
+      tag: 'Kodeks',
+      layout: 'grid',
+      title: 'Złote Zasady Mistrza',
+      content: 'Zawsze pamiętaj o tych fundamentach bezpieczeństwa:',
+      cards: [
+        { head: 'Prywatność klucza', body: 'Twój klucz prywatny to absolutna świętość. Służy tylko do otwierania i nigdy go nie udostępniaj.' },
+        { head: 'Właściwe narzędzia', body: 'Pamiętaj, że każdy szyfr ma swój cel. AES do szybkości, ECC do bezpieczeństwa mobilnego.' },
+      ],
+      note: 'Szyfrowanie to tarcza, ale to Ty jesteś tym, który ją dzierży.'
+    },
+    {
+      tag: 'Finał',
+      layout: 'bars',
+      title: 'Szkolenie Zakończone',
+      bars: [
+        { label: 'Historia szyfrów', value: 100 },
+        { label: 'Szyfrowanie Symetryczne', value: 100 },
+        { label: 'Szyfrowanie Asymetryczne', value: 100 }
+      ],
+      note: 'Dziękujemy za wspólną naukę i uratowanie Cyfrowego Królestwa!'
+    }
+  ];
+
+  let currentWorkspace = $derived(workspace[currentMessageIndex] ?? null);
+
+
+  function typeMessage() {
     if (typeInterval) clearInterval(typeInterval);
     isTyping = true;
     displayedText = '';
+    const fullText = messages[currentMessageIndex].text;
     let charIndex = 0;
     typeInterval = setInterval(() => {
       if (charIndex < fullText.length) {
@@ -36,10 +84,6 @@
     }, 50);
   }
 
-  function typeCurrentMessage() {
-    typeText(messages[currentMessageIndex].text);
-  }
-
   function handleAdvance() {
     if (isTyping) {
       clearInterval(typeInterval);
@@ -47,16 +91,12 @@
       isTyping = false;
       return;
     }
-
     if (currentMessageIndex < messages.length - 1) {
-      // Blokada: król czeka, aż backend odpowie, zanim powie "Oto i ona!"
-      if (currentMessageIndex === 2 && isLoading) {
-        return; 
-      }
       currentMessageIndex++;
-      typeCurrentMessage();
+      sessionStorage.setItem('strona10_index', currentMessageIndex.toString());
+      typeMessage();
     } else {
-      location.href = '/nastepna_strona'; // ZMIEŃ NA WŁAŚCIWĄ STRONĘ DOCELOWĄ
+      location.href = '/Biblioteka';
     }
   }
 
@@ -67,38 +107,12 @@
       isTyping = false;
       return;
     }
-
     if (currentMessageIndex > 0) {
       currentMessageIndex--;
-      typeCurrentMessage();
+      sessionStorage.setItem('strona10_index', currentMessageIndex.toString());
+      typeMessage();
     } else {
-      location.href = '/poprzednia_strona'; // ZMIEŃ NA WŁAŚCIWĄ STRONĘ
-    }
-  }
-
-  // Funkcja pobierająca dane ze Spring Boota
-  async function fetchAiTrivia() {
-    try {
-      // Pamiętaj o dodaniu adnotacji @CrossOrigin w kontrolerze Spring Boota, 
-      // inaczej przeglądarka zablokuje to zapytanie (CORS policy)!
-      const response = await fetch('http://localhost:8080/fact'); 
-      
-      if (!response.ok) throw new Error('Błąd połączenia z serwerem');
-      
-      // Odbieramy jako tekst, bo tak zwraca to w tej chwili Twój backend
-      aiTrivia = await response.text(); 
-      isLoading = false;
-      
-      // Jeśli gracz już doklikał do wiadomości oczekującej, przesuń automatycznie dalej
-      if (currentMessageIndex === 2 && !isTyping) {
-        handleAdvance();
-      }
-    } catch (error) {
-      console.error("Błąd pobierania z backendu:", error);
-      fetchError = true;
-      isLoading = false;
-      aiTrivia = "Niestety, połączenie z magiem (backendem) zostało zerwane. Upewnij się, że serwer działa!";
-      if (currentMessageIndex === 2 && !isTyping) handleAdvance();
+      location.href = '/strona9';
     }
   }
 
@@ -107,6 +121,7 @@
       if (e.key === 'Escape') { e.preventDefault(); showConfirm = false; }
       return;
     }
+    if (['INPUT', 'TEXTAREA', 'BUTTON'].includes(e.target.tagName)) return;
     if (e.key === ' ' || e.key === 'Enter') {
       e.preventDefault();
       handleAdvance();
@@ -114,8 +129,11 @@
   }
 
   onMount(() => {
-    typeCurrentMessage();
-    fetchAiTrivia(); // Startujemy zapytanie do Springa od razu po wejściu na stronę
+    const savedIndex = sessionStorage.getItem('strona10_index');
+    if (savedIndex) {
+      currentMessageIndex = parseInt(savedIndex);
+    }
+    typeMessage();
     window.addEventListener('keydown', handleKeydown);
     return () => {
       if (typeInterval) clearInterval(typeInterval);
@@ -135,12 +153,15 @@
       <button class="page-title-btn" onclick={() => showConfirm = true}>
         {import.meta.env.VITE_APP_NAME}
       </button>
-      <div class="page-counter">CIEKAWOSTKA</div>
+      <div class="page-counter">10 / 10</div>
     </div>
   </nav>
 
   {#if showConfirm}
-  <div class="confirm-overlay" role="dialog" aria-modal="true" onkeydown={(e) => e.key === 'Escape' && (showConfirm = false)}>
+  <div class="confirm-overlay"
+       role="dialog"
+       aria-modal="true"
+       onkeydown={(e) => e.key === 'Escape' && (showConfirm = false)}>
     <div class="confirm-box">
       <p class="confirm-msg">Czy jesteś pewny? Postęp tej sesji zostanie utracony.</p>
       <div class="confirm-btns">
@@ -155,36 +176,71 @@
     <div class="chess-pattern-bg"></div>
 
     <div class="right-panel">
-      <div class="workspace" style="display: flex; flex-direction: column;">
-        <span class="ws-tag">Przekaz z backendu</span>
-        <h2 class="ws-title" style="margin-bottom: 1rem;">Wyrocznia AI</h2>
-        
-        <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; background: rgba(106,117,155,0.03); border-radius: 16px; padding: 2rem; border: 1px dashed rgba(106,117,155,0.2);">
-          
-          {#if isLoading}
-            <div style="display: flex; flex-direction: column; align-items: center; gap: 1rem;">
-              <div class="ai-spinner"></div>
-              <p style="color: var(--color-primary); font-weight: 600; text-align: center; font-size: 1.1rem; margin: 0; animation: pulseText 1.5s infinite;">
-                Trwa łączenie z modelem językowym...
-              </p>
-              <p style="color: var(--color-text); opacity: 0.6; font-size: 0.9rem; margin: 0;">
-                Mag formuje zaklęcie (to może potrwać kilka sekund)
-              </p>
-            </div>
-          {:else}
-            <div style="animation: wsFadeIn 0.5s ease both;">
-              <span style="display: block; text-align: center; font-size: 2.5rem; margin-bottom: 1rem;">🔮</span>
-              <p style="font-size: 1.15rem; color: var(--color-text); line-height: 1.6; text-align: center; font-style: italic;">
-                "{aiTrivia}"
-              </p>
-              {#if fetchError}
-                <p style="color: #e05a5a; font-size: 0.85rem; text-align: center; margin-top: 1rem; font-weight: bold;">[ Błąd 500: Sprawdź konsolę backendu ]</p>
-              {/if}
-            </div>
-          {/if}
-
-        </div>
+      {#if currentWorkspace}
+      <div class="workspace">
+        <span class="ws-tag">{currentWorkspace.tag}</span>
+        <h2 class="ws-title">{currentWorkspace.title}</h2>
+        {#if currentWorkspace.content}
+          <p class="ws-content">{currentWorkspace.content}</p>
+        {/if}
+        {#if currentWorkspace.stat}
+          <div class="ws-stat-block">
+            <span class="ws-stat">{currentWorkspace.stat}</span>
+            <span class="ws-stat-label">{currentWorkspace.stat_label}</span>
+          </div>
+        {/if}
+        {#if currentWorkspace.examples}
+          <div class="ws-examples">
+            {#each currentWorkspace.examples as ex}
+              <div class="ws-example" class:ws-bad={ex.bad} class:ws-good={!ex.bad}>
+                <span class="ws-ex-label">{ex.label}</span>
+                <code class="ws-ex-value">{ex.value}</code>
+              </div>
+            {/each}
+          </div>
+        {/if}
+        {#if currentWorkspace.items}
+          <ul class="ws-list">
+            {#each currentWorkspace.items as item}
+              <li class="ws-item">{item}</li>
+            {/each}
+          </ul>
+        {/if}
+        {#if currentWorkspace.steps}
+          <ol class="ws-steps">
+            {#each currentWorkspace.steps as step}
+              <li class="ws-step">{step}</li>
+            {/each}
+          </ol>
+        {/if}
+        {#if currentWorkspace.cards}
+          <div class="ws-grid">
+            {#each currentWorkspace.cards as card}
+              <div class="ws-card">
+                <strong class="ws-card-head">{card.head}</strong>
+                <span class="ws-card-body">{card.body}</span>
+              </div>
+            {/each}
+          </div>
+        {/if}
+        {#if currentWorkspace.bars}
+          <div class="ws-bars">
+            {#each currentWorkspace.bars as bar}
+              <div class="ws-bar-row">
+                <span class="ws-bar-label">{bar.label}</span>
+                <div class="ws-bar-track">
+                  <div class="ws-bar-fill" style="width: {bar.value}%"></div>
+                </div>
+                <span class="ws-bar-val">{bar.value}%</span>
+              </div>
+            {/each}
+          </div>
+        {/if}
+        {#if currentWorkspace.note}
+          <p class="ws-note">{currentWorkspace.note}</p>
+        {/if}
       </div>
+      {/if}
 
       <div class="dialogue-area"
            onclick={handleAdvance}
@@ -197,11 +253,9 @@
         <p class="hint-text">
           {isTyping
             ? 'Skip'
-            : (currentMessageIndex === 2 && isLoading)
-              ? 'Poczekaj na odpowiedź maga...'
-              : currentMessageIndex < messages.length - 1
-                ? 'Kontynuuj →'
-                : 'Przejdź dalej →'}
+            : currentMessageIndex < messages.length - 1
+              ? 'Kontynuuj →'
+              : 'Przejdź dalej →'}
         </p>
       </div>
     </div>
@@ -214,21 +268,6 @@
 </main>
 
 <style>
-  .ai-spinner {
-    width: 45px;
-    height: 45px;
-    border: 4px solid rgba(106,117,155,0.2);
-    border-top-color: var(--color-primary);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-  }
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
-  @keyframes pulseText {
-    0%, 100% { opacity: 0.5; }
-    50% { opacity: 1; }
-  }
 :root {
   --color-primary: #6A759B;
   --color-text: #373A40;

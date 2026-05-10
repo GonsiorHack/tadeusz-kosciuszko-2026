@@ -1,5 +1,4 @@
 <script>
-  // Placeholder for library content
   const categories = [
     {
       title: "Podstawy Kryptografii",
@@ -14,19 +13,29 @@
       items: ["Phishing", "Man-in-the-Middle", "Ransomware"]
     }
   ];
+
+  let showScenarioPopup = $state(false);
+
+  function openScenarioPopup() {
+    showScenarioPopup = true;
+  }
+
+  function closeScenarioPopup() {
+    showScenarioPopup = false;
+  }
 </script>
 
 <main>
     <nav class="glass-nav">
         <div class="nav-container">
-            <button class="back-button" onclick={() => (location.href = '/')}>
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                    <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                Powrót
+            <button class="nav-brand" onclick={() => (location.href = '/')}>
+                <span class="nav-title">{import.meta.env.VITE_APP_NAME}</span>
             </button>
-            <h2 class="page-title">{import.meta.env.VITE_APP_NAME}</h2>
-            <div class="nav-spacer"></div>
+            <ul class="nav-menu">
+                <li><button class="nav-link nav-link-active" onclick={() => (location.href = '/Biblioteka')}>{import.meta.env.VITE_NAV_2}</button></li>
+                <li><button class="nav-link" onclick={openScenarioPopup}>{import.meta.env.VITE_NAV_3}</button></li>
+                <li><button class="nav-link" onclick={() => (location.href = '/O_projekcie')}>{import.meta.env.VITE_NAV_4}</button></li>
+            </ul>
         </div>
     </nav>
 
@@ -64,6 +73,31 @@
             </div>
         </div>
     </section>
+
+    {#if showScenarioPopup}
+    <div class="modal-overlay"
+         role="button"
+         tabindex="0"
+         onclick={closeScenarioPopup}
+         onkeydown={(e) => e.key === 'Escape' && closeScenarioPopup()}>
+        <div class="modal-content"
+             role="dialog"
+             onclick={(e) => e.stopPropagation()}
+             onkeydown={(e) => e.stopPropagation()}>
+            <button class="modal-close"
+                    onclick={closeScenarioPopup}
+                    aria-label="Zamknij okno">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </button>
+            <div class="modal-icon">⚠️</div>
+            <h2 class="modal-title">Scenariusze zablokowane</h2>
+            <p class="modal-message">Musisz najpierw ukończyć szkolenie początkowe aby przejść do następnych scenariuszy</p>
+            <button class="modal-button" onclick={closeScenarioPopup}>Rozumiem</button>
+        </div>
+    </div>
+    {/if}
 </main>
 
 <style>
@@ -110,40 +144,47 @@ main {
     padding: 1rem 2rem;
 }
 
-.back-button {
+.nav-brand {
+    display: flex;
+    align-items: center;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+}
+
+.nav-title {
+    font-size: 1.6rem;
+    font-weight: 800;
+    font-family: 'Georgia', 'Palatino Linotype', serif;
+    color: #3e4770;
+    letter-spacing: -0.5px;
+    font-style: italic;
+}
+
+.nav-menu {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    list-style: none;
+}
+
+.nav-link {
     background: transparent;
-    color: var(--color-text);
-    border: 2px solid var(--color-primary);
-    padding: 0.7rem 1.5rem;
-    font-size: 1rem;
-    border-radius: 50px;
+    border: none;
     cursor: pointer;
+    font-size: 0.95rem;
     font-weight: 600;
-    transition: all 0.3s ease;
-}
-
-.back-button:hover {
-    background: var(--color-primary);
-    color: white;
-    transform: translateX(-3px);
-}
-
-.page-title {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--color-primary);
-    letter-spacing: -0.5px;
-}
-
-.page-counter {
-    font-size: 1rem;
     color: var(--color-text);
-    font-weight: 600;
-    opacity: 0.7;
+    padding: 0.55rem 1.1rem;
+    border-radius: 50px;
+    transition: all 0.25s ease;
+    opacity: 0.75;
 }
+
+.nav-link:hover { background: rgba(106,117,155,0.12); opacity: 1; }
+.nav-link-active { background: var(--color-primary); color: white; opacity: 1; }
+.nav-link-active:hover { background: #5a6487; color: white; }
 
 .story-section {
     display: flex;
@@ -295,6 +336,54 @@ main {
 @keyframes fadeInOut {
     0%, 100% { opacity: 0.5; }
     50% { opacity: 1; }
+}
+
+.modal-overlay {
+    position: fixed; inset: 0; z-index: 2000;
+    background: rgba(0,0,0,0.45);
+    backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center;
+    padding: 1rem;
+    animation: fadeInModal 0.2s ease;
+}
+.modal-content {
+    position: relative;
+    background: white; border-radius: 24px;
+    padding: 2.5rem 2rem 2rem;
+    max-width: 420px; width: 100%;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.2);
+    text-align: center;
+    animation: slideUpModal 0.25s ease;
+}
+.modal-close {
+    position: absolute; top: 1rem; right: 1rem;
+    background: transparent; border: none; cursor: pointer;
+    color: var(--color-text); opacity: 0.5;
+    transition: opacity 0.2s;
+}
+.modal-close:hover { opacity: 1; }
+.modal-icon { font-size: 3rem; margin-bottom: 1rem; }
+.modal-title {
+    font-size: 1.5rem; font-weight: 700;
+    color: var(--color-primary); margin-bottom: 0.75rem;
+}
+.modal-message {
+    font-size: 1rem; color: var(--color-text);
+    line-height: 1.65; opacity: 0.8; margin-bottom: 1.75rem;
+}
+.modal-button {
+    background: var(--color-primary); color: white;
+    border: none; border-radius: 50px;
+    padding: 0.75rem 2rem; font-size: 1rem; font-weight: 600;
+    cursor: pointer; transition: background 0.2s;
+}
+.modal-button:hover { background: #5a6487; }
+@keyframes fadeInModal {
+    from { opacity: 0; } to { opacity: 1; }
+}
+@keyframes slideUpModal {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
 @media (max-width: 968px) {

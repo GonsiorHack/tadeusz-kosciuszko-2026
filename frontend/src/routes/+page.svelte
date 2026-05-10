@@ -1,5 +1,6 @@
 <script>
   let showScenarioPopup = $state(false);
+  let isStarting = $state(false);
 
   function openScenarioPopup() {
     showScenarioPopup = true;
@@ -8,15 +9,20 @@
   function closeScenarioPopup() {
     showScenarioPopup = false;
   }
+
+  function startGame() {
+    if (isStarting) return;
+    isStarting = true;
+    setTimeout(() => { location.href = '/strona1'; }, 700);
+  }
 </script>
 
 <main>
     <nav class="glass-nav">
         <div class="nav-container">
-            <div class="nav-brand">
-                <img src="/src/lib/assets/whiteKing.svg" alt="Logo" class="nav-logo" />
+            <button class="nav-brand" onclick={() => (location.href = '/')}>
                 <span class="nav-title">{import.meta.env.VITE_APP_NAME}</span>
-            </div>
+            </button>
             <ul class="nav-menu">
                 <li><button class="nav-link" onclick={() => (location.href = '/Biblioteka')}>{import.meta.env.VITE_NAV_2}</button></li>
                 <li><button class="nav-link" onclick={openScenarioPopup}>{import.meta.env.VITE_NAV_3}</button></li>
@@ -25,20 +31,19 @@
         </div>
     </nav>
 
-    <!-- Hero Section -->
     <section class="hero">
         <div class="chess-pattern-bg"></div>
         
         <div class="hero-content">
             <div class="king-showcase">
-                <img src="/src/lib/assets/whiteKing.svg" alt="White King" class="hero-king" />
+                <img src="/src/lib/assets/whiteKing.svg" alt="White King" class="hero-king" class:king-leaving={isStarting} />
                 <div class="king-glow"></div>
             </div>
             
             <div class="hero-text">
                 <h1 class="hero-title">{import.meta.env.VITE_APP_NAME}</h1>
                 <p class="hero-subtitle">Naucz się podstaw cyberbezpieczeństwa <br> i nie daj się zaskoczyć w sieci</p>
-                <button class="cta-button" onclick={() => (location.href = '/strona1')}>
+                <button class="cta-button" onclick={startGame} disabled={isStarting}>
                     <span>ROZPOCZNIJ GRĘ</span>
                     <svg class="button-arrow" width="20" height="20" viewBox="0 0 20 20" fill="none">
                         <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -47,7 +52,6 @@
             </div>
         </div>
 
-        <!-- Floating Chess Pieces Decoration -->
         <div class="floating-pieces">
             <div class="piece piece-1"></div>
             <div class="piece piece-2"></div>
@@ -55,7 +59,6 @@
         </div>
     </section>
 
-    <!-- Scenario Popup Modal -->
     {#if showScenarioPopup}
     <div class="modal-overlay" 
          role="button" 
@@ -104,7 +107,6 @@ main {
     overflow: hidden;
 }
 
-/* Glassmorphism Navigation */
 .glass-nav {
     position: fixed;
     top: 20px;
@@ -131,6 +133,10 @@ main {
     display: flex;
     align-items: center;
     gap: 1rem;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
 }
 
 .nav-logo {
@@ -139,10 +145,12 @@ main {
 }
 
 .nav-title {
-    font-size: 1.3rem;
-    font-weight: 700;
-    color: var(--color-primary);
+    font-size: 1.6rem;
+    font-weight: 800;
+    font-family: 'Georgia', 'Palatino Linotype', serif;
+    color: #3e4770;
     letter-spacing: -0.5px;
+    font-style: italic;
 }
 
 .nav-menu {
@@ -182,7 +190,6 @@ main {
     width: 100%;
 }
 
-/* Hero Section */
 .hero {
     display: flex;
     align-items: center;
@@ -251,6 +258,17 @@ main {
     50% { opacity: 0.8; transform: translate(-50%, -50%) scale(1.1); }
 }
 
+@keyframes kingLeave {
+    0%   { transform: translateY(0) scale(1) rotate(0deg); }
+    20%  { transform: translateY(-30px) scale(1.12) rotate(-8deg); }
+    50%  { transform: translateY(-80px) scale(1.2) rotate(10deg); }
+    100% { transform: translateY(-300px) scale(0.6) rotate(-15deg); opacity: 0; }
+}
+
+.hero-king.king-leaving {
+    animation: kingLeave 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
+}
+
 .hero-text {
     flex: 1;
     text-align: left;
@@ -306,7 +324,6 @@ main {
     transform: translateX(5px);
 }
 
-/* Floating Decoration Pieces */
 .floating-pieces {
     position: absolute;
     width: 100%;
@@ -347,7 +364,6 @@ main {
     66% { transform: translate(-20px, 20px) rotate(-10deg); }
 }
 
-/* Responsive Design */
 @media (max-width: 968px) {
     .hero-content {
         flex-direction: column;
@@ -388,7 +404,6 @@ main {
     }
 }
 
-/* Modal Styles */
 .modal-overlay {
     position: fixed;
     top: 0;

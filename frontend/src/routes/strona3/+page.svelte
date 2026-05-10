@@ -7,60 +7,58 @@
   let showConfirm = $state(false);
 
   const messages = [
-    { text: "Teraz czas na phishing — ulubiona broń wrogiej królowej!" },
-    { text: "Phishing to fałszywe wiadomości, które wyglądają jak prawdziwe." },
-    { text: "Mogą udawać bank, sklep lub nawet... mnie!" },
-    { text: "Zawsze sprawdzaj adres nadawcy i nie klikaj podejrzanych linków." },
-    { text: "Jeśli coś wygląda zbyt dobrze lub zbyt pilnie — to prawdopodobnie pułapka." },
+    { text: "Skoro wiesz już, dlaczego szyfrowanie jest ważne, pora poznać jego historię." },
+    { text: "Zaczniemy od starożytności. Słyszałeś kiedyś o Juliuszu Cezarze?" },
+    { text: "Ten rzymski wódz wykorzystywał specjalny szyfr do ochrony tajnej korespondencji wojskowej podczas swoich kampanii." },
+    { text: "To genialne w swojej prostocie: Szyfr Cezara to tak zwany szyfr podstawieniowy." },
+    { text: "Każda litera jest po prostu przesuwana o stałą liczbę miejsc w alfabecie. Zobacz na planszy, jak to działa w praktyce!" },
   ];
 
   let currentMessageIndex = $state(0);
 
   const workspace = [
-    null,
-{
-      tag: 'Lekcja 2',
-      title: 'Czym jest phishing?',
+    null, // Wiadomość 1: tylko tekst, brak panelu
+    {
+      tag: 'Historia',
+      layout: 'stat',
+      title: 'Starożytne początki',
+      stat: 'I wiek',
+      stat_label: 'p.n.e.',
+      content: 'Szyfrowanie to nie tylko komputery. Stosowano je już w starożytności, a jednym z najstarszych udokumentowanych przykładów jest właśnie Szyfr Cezara.',
+      note: 'Nazwa pochodzi oczywiście od Juliusza Cezara.'
+    },
+    {
+      tag: 'Historia',
       layout: 'list',
-      content: 'Phishing to technika wyłudzania danych przez podszywanie się pod zaufane osoby lub firmy.',
+      title: 'Zastosowanie militarne',
+      content: 'Cezar nie mógł ufać posłańcom. Gdyby wróg przejął list, poznałby plany armii. Szyfr służył do:',
       items: [
-        'Fałszywe e-maile wyglądające jak wiadomości z banku',
-        'SMS-y z linkami do podróbek stron',
-        'Strony internetowe łudząco podobne do oryginałów',
-      ],
+        'Ochrony korespondencji wojskowej',
+        'Zabezpieczania strategii przed wrogiem',
+        'Bezpiecznego przekazywania rozkazów generałom'
+      ]
     },
-{
-      tag: 'Lekcja 2',
-      title: 'Jak rozpoznać phishing?',
-      layout: 'steps',
-      steps: [
-        'Sprawdź adres nadawcy — czy domena jest poprawna?',
-        'Najedź na link przed kliknięciem — gdzie prowadzi?',
-        'Czy wiadomość wymusza pośpiech lub grozi konsekwencjami?',
-        'Czy prosi o hasło, PESEL lub dane karty?',
-      ],
-    },
-{
-      tag: 'Lekcja 2',
-      title: 'Przykłady phishingu',
-      layout: 'examples',
-      content: 'Porównaj nadawcę i domenę:',
-      examples: [
-        { label: 'Fałszywy', value: 'support@paypa1.com', bad: true },
-        { label: 'Prawdziwy', value: 'support@paypal.com', bad: false },
-      ],
-      note: 'Zmiana jednej litery (l na 1) — klasyczna technika.',
-    },
-{
-      tag: 'Lekcja 2',
-      title: 'Zasada ograniczonego zaufania',
+    {
+      tag: 'Teoria',
       layout: 'grid',
+      title: 'Jak to działa?',
+      content: 'Szyfr Cezara to jedna z najprostszych technik kryptograficznych.',
       cards: [
-        { head: 'Pilne wiadomosci', body: 'Presja czasu to sygnał ostrzegawczy' },
-        { head: 'Nieznany nadawca', body: 'Weryfikuj tożsamość innymi kanałami' },
-        { head: 'Podejrzany link', body: 'Wpisuj adresy ręcznie w przeglądarce' },
-        { head: 'Prośba o dane', body: 'Legalne firmy nie pytają o hasła' },
+        { head: 'Rodzaj szyfru', body: 'Szyfr podstawieniowy (podmieniamy znaki).' },
+        { head: 'Zasada działania', body: 'Każda litera zastępowana jest inną literą z alfabetu.' },
+        { head: 'Klucz (Sekret)', body: 'Stała liczba pozycji o którą przesuwamy litery.' }
+      ]
+    },
+    {
+      tag: 'Praktyka',
+      layout: 'examples',
+      title: 'Przesunięcie o +2',
+      content: 'Każda litera przeskakuje o 2 miejsca dalej (np. A staje się C, B staje się D). Zobaczmy to na przykładzie słowa KOT:',
+      examples: [
+        { label: 'Oryginał', value: 'KOT', bad: true },
+        { label: 'Szyfrogram', value: 'MQV', bad: false },
       ],
+      note: 'Przyjrzyj się temu uważnie... Ta wiedza przyda Ci się już za chwilę!'
     }
   ];
 

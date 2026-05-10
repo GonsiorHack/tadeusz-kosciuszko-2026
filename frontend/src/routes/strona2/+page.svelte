@@ -7,57 +7,56 @@
   let showConfirm = $state(false);
 
   const messages = [
-    { text: "Skoro już się zgodziłeś... czas zacząć twoje szkolenie!" },
-    { text: "Pierwsza lekcja: hasła. Bez silnego hasła jesteś jak zamek bez klucza." },
-    { text: "Dobre hasło to minimum 12 znaków, z wielkimi literami, cyframi i znakami specjalnymi." },
-    { text: "Nigdy nie używaj tego samego hasła w dwóch miejscach!" },
-    { text: "Najlepiej skorzystaj z menedżera haseł. Ja polecam — choć sam mam problem z zapamiętywaniem." },
+    { text: "Czas na nową lekcję! Zanim przejdziemy do zaawansowanych taktyk, musisz zrozumieć pewne podstawy." },
+    { text: "Kryptografia. To potężna dziedzina nauki, która zabezpiecza informacje. To fundament całego cyfrowego świata!" },
+    { text: "Dzięki niej jesteś bezpieczny w sieci, a Twoje pieniądze w banku są chronione. Szyfrowanie to tarcza dla Twoich transakcji." },
+    { text: "Rozmawiasz ze znajomymi? Kryptografia sprawia, że nikt was nie podsłucha. Zmienia wiadomości w nieczytelny szyfr." },
+    { text: "I wreszcie: twoje sekrety. Szyfrowanie chroni pliki przed niepowołanym dostępem, nawet jeśli ktoś ukradnie twój dysk." },
   ];
 
   const workspace = [
     null,
     {
-      tag: 'Lekcja 1',
+      tag: 'Wprowadzenie',
       layout: 'list',
-      title: 'Silne hasła',
-      content: 'Hasło to pierwsza linia obrony Twojego konta. Słabe hasło to jak otwarte drzwi — każdy może wejść.',
+      title: 'Czym jest kryptografia?',
+      content: 'Kryptografia to dziedzina nauki zajmująca się zabezpieczaniem informacji, stanowiąca fundament funkcjonowania współczesnego świata cyfrowego. Jej kluczowe zastosowania to m.in.:',
       items: [
-        'Słabe: "haslo123", "qwerty", data urodzenia',
-        'Silne: losowy ciąg min. 12 znaków',
-        'Mieszaj wielkie/małe litery, cyfry, znaki specjalne',
+        'Bezpieczeństwo w sieci',
+        'Sektor finansowy i bankowość',
+        'Komunikacja i komunikatory',
+        'Przechowywanie danych'
       ]
     },
     {
-      tag: 'Lekcja 1',
+      tag: 'Zastosowanie',
+      layout: 'grid',
+      title: 'Sieć i Finanse',
+      content: 'Kryptografia chroni nasze codzienne, najważniejsze działania w internecie:',
+      cards: [
+        { head: 'Bezpieczeństwo w sieci', body: 'Ochrona prywatności podczas przeglądania internetu.' },
+        { head: 'Sektor finansowy', body: 'Zabezpieczanie transakcji oraz bankowość elektroniczna.' }
+      ]
+    },
+    {
+      tag: 'Zastosowanie',
       layout: 'examples',
-      title: 'Anatomia silnego hasła',
-      content: 'Porównaj te dwa hasła:',
+      title: 'Bezpieczna Komunikacja',
+      content: 'Szyfrowanie wiadomości i rozmów w komunikatorach zapobiega ich przechwyceniu:',
       examples: [
-        { label: 'Słabe', value: 'piotr2004', bad: true },
-        { label: 'Silne', value: 'X#k9mQ!rLv3@', bad: false },
+        { label: 'Brak szyfrowania', value: 'Hej, wyślesz mi raport?', bad: true },
+        { label: 'Z szyfrowaniem', value: '8x!9qA@2#Lp$z9...', bad: false },
       ],
-      note: 'Hasło "piotr2004" można złamać w kilka sekund. "X#k9mQ!rLv3@" — miliardy lat bruteforce.'
+      note: 'Tylko odbiorca posiadający odpowiedni klucz może z powrotem odczytać wiadomość.'
     },
     {
-      tag: 'Lekcja 1',
+      tag: 'Zastosowanie',
       layout: 'stat',
-      title: 'Nie recyklinguj haseł',
-      stat: '23 mln',
-      stat_label: 'kont z hasłem "123456"',
-      content: 'zostało ujawnionych w jednym wycieku. Każde konto powinno mieć unikalne hasło — tylko menedżer haseł to realnie umożliwia.',
-      note: 'To zjawisko nosi nazwę "credential stuffing".'
-    },
-    {
-      tag: 'Lekcja 1',
-      layout: 'steps',
-      title: 'Menedżery haseł',
-      content: 'Nie musisz pamiętać dziesiątek haseł. Menedżer haseł robi to za Ciebie.',
-      steps: [
-        'Zainstaluj menedżera: Bitwarden (darmowy) lub 1Password',
-        'Utwórz jedno silne hasło główne i zapamiętaj je',
-        'Importuj lub utwórz nowe hasła dla każdego serwisu',
-        'Włącz 2FA dla samego menedżera haseł',
-      ]
+      title: 'Przechowywanie danych',
+      stat: '100%',
+      stat_label: 'poufności',
+      content: 'Odpowiednio zaimplementowana kryptografia chroni pliki przed niepowołanym dostępem – nikt z zewnątrz ich nie odczyta.',
+      note: 'Kryptografia to zamek cyfrowego świata, a klucz nosisz tylko Ty.'
     },
   ];
 

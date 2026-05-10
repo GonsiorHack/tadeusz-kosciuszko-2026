@@ -6,72 +6,27 @@
   let typeInterval = undefined;
   let showConfirm = $state(false);
 
+  // Stan specyficzny dla zadania
+  let userInput = $state('');
+  let isError = $state(false);
+  let isSuccess = $state(false);
+  let showHint = $state(false);
+
   const messages = [
-    { text: "Kolejna taktyka królowej: złośliwe oprogramowanie, zwane malware." },
-    { text: "Malware to programy zaprojektowane, by szkodzić twojemu urządzeniu." },
-    { text: "Może kraść dane, szyfrować pliki lub szpiegować cię przez kamerę." },
-    { text: "Broń się: aktualizuj system, używaj antywirusa i nie pobieraj plików z nieznanych źródeł." },
-    { text: "Pamiętaj: aktualizacje to zbroja, nie irytacja!" },
+    { text: "Pora sprawdzić Twoją wiedzę w praktyce! Zobacz na panel obok." },
+    { text: "Oto przechwycona wiadomość: HLPZFRPWHLK. Klucz to +3. Odszyfruj ją! (Jeśli utkniesz, kliknij we mnie po podpowiedź)" },
   ];
+
+  const hintMessage = "Podpowiedź: Skoro klucz to +3, musisz policzyć 3 litery do przodu. H staje się K. Zobacz na alfabet po prawej!";
+  const successMessage = "Wspaniale! Hasło to KOSCIUSZKON. Rozwiązałeś to bezbłędnie. Kliknij, by kontynuować podróż.";
 
   let currentMessageIndex = $state(0);
 
-  const workspace = [
-    null,
-{
-      tag: 'Lekcja 3',
-      title: 'Rodzaje złośliwego oprogramowania',
-      layout: 'grid',
-      cards: [
-        { head: 'Wirus', body: 'Infekuje pliki i rozprzestrzenia się po systemie' },
-        { head: 'Trojan', body: 'Ukrywa się w pozornie użytecznym programie' },
-        { head: 'Ransomware', body: 'Szyfruje pliki i żąda okupu za klucz' },
-        { head: 'Spyware', body: 'Szpieguje działania użytkownika w tle' },
-      ],
-    },
-{
-      tag: 'Lekcja 3',
-      title: 'Co malware może zrobić?',
-      layout: 'list',
-      content: 'Skutki infekcji mogą być bardzo poważne.',
-      items: [
-        'Kradzież danych logowania i numerów kart',
-        'Zablokowanie dostępu do własnych plików',
-        'Szpiegowanie przez kamerę lub mikrofon',
-        'Włączenie urządzenia do botnetu',
-      ],
-    },
-{
-      tag: 'Lekcja 3',
-      title: 'Jak się chronić?',
-      layout: 'steps',
-      steps: [
-        'Instaluj aktualizacje systemu i aplikacji natychmiast',
-        'Używaj aktywnego programu antywirusowego',
-        'Nie otwieraj plików z nieznanych źródeł',
-        'Pobieraj oprogramowanie tylko z oficjalnych stron',
-        'Rób regularne kopie zapasowe danych',
-      ],
-    },
-{
-      tag: 'Lekcja 3',
-      title: 'Aktualizacje = ochrona',
-      layout: 'stat',
-      content: 'wykorzystuje znane luki, dla których od dawna istniały już łatki. Nieaktualne oprogramowanie to otwarte zaproszenie dla atakujących.',
-      note: 'Włącz automatyczne aktualizacje — to najprostsza rzecz, którą możesz zrobić.',
-      stat: '60%',
-      stat_label: 'ataków malware',
-    }
-  ];
-
-  let currentWorkspace = $derived(workspace[currentMessageIndex] ?? null);
-
-
-  function typeMessage() {
+  // Funkcja ogólna do pisania dowolnego tekstu
+  function typeText(fullText) {
     if (typeInterval) clearInterval(typeInterval);
     isTyping = true;
     displayedText = '';
-    const fullText = messages[currentMessageIndex].text;
     let charIndex = 0;
     typeInterval = setInterval(() => {
       if (charIndex < fullText.length) {
@@ -84,35 +39,86 @@
     }, 50);
   }
 
+  function typeCurrentMessage() {
+    typeText(messages[currentMessageIndex].text);
+  }
+
   function handleAdvance() {
+    // Pomiń animację pisania, jeśli w trakcie
     if (isTyping) {
       clearInterval(typeInterval);
-      displayedText = messages[currentMessageIndex].text;
+      if (isSuccess) displayedText = successMessage;
+      else if (showHint) displayedText = hintMessage;
+      else displayedText = messages[currentMessageIndex].text;
+      
       isTyping = false;
       return;
     }
+
+    // Jeśli zadanie jest już rozwiązane, przechodzimy dalej
+    if (isSuccess) {
+      location.href = '/strona5';
+      return;
+    }
+
+    // Normalne przewijanie dialogu wprowadzającego
     if (currentMessageIndex < messages.length - 1) {
       currentMessageIndex++;
       sessionStorage.setItem('strona4_index', currentMessageIndex.toString());
-      typeMessage();
+      typeCurrentMessage();
     } else {
-      location.href = '/strona5';
+      // Gracz jest na ostatniej wiadomości (polecenie) i klika w króla - pokazujemy podpowiedź
+      if (!showHint) {
+        showHint = true;
+        typeText(hintMessage);
+      }
     }
   }
 
   function handleBack() {
     if (isTyping) {
       clearInterval(typeInterval);
-      displayedText = messages[currentMessageIndex].text;
+      // Ustalanie tekstu w zależności od aktualnego stanu
+      if (isSuccess) displayedText = successMessage;
+      else if (showHint) displayedText = hintMessage;
+      else displayedText = messages[currentMessageIndex].text;
+      
       isTyping = false;
       return;
     }
+
+    // Resetowanie stanu zadania przy cofaniu
+    if (showHint || isSuccess) {
+      showHint = false;
+      isSuccess = false;
+      userInput = '';
+      isError = false;
+      typeCurrentMessage();
+      return;
+    }
+
     if (currentMessageIndex > 0) {
       currentMessageIndex--;
       sessionStorage.setItem('strona4_index', currentMessageIndex.toString());
-      typeMessage();
+      typeCurrentMessage();
     } else {
-      location.href = '/strona3';
+      location.href = '/strona3'; // Powrót do poprzedniej lekcji
+    }
+  }
+
+  // Funkcja sprawdzająca wpisane hasło
+  function checkAnswer() {
+    // Normalizujemy tekst - usuwamy spacje z brzegów i zmieniamy na wielkie litery
+    const answer = userInput.trim().toUpperCase();
+    
+    if (answer === 'KOSCIUSZKON') {
+      isSuccess = true;
+      isError = false;
+      typeText(successMessage);
+    } else {
+      isError = true;
+      // Usuwamy komunikat o błędzie po 2 sekundach
+      setTimeout(() => isError = false, 2000); 
     }
   }
 
@@ -121,7 +127,9 @@
       if (e.key === 'Escape') { e.preventDefault(); showConfirm = false; }
       return;
     }
-    if (['INPUT', 'TEXTAREA', 'BUTTON'].includes(e.target.tagName)) return;
+    // Ignoruj klawisze, gdy użytkownik wpisuje odpowiedź w input
+    if (['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
+    
     if (e.key === ' ' || e.key === 'Enter') {
       e.preventDefault();
       handleAdvance();
@@ -133,7 +141,7 @@
     if (savedIndex) {
       currentMessageIndex = parseInt(savedIndex);
     }
-    typeMessage();
+    typeCurrentMessage();
     window.addEventListener('keydown', handleKeydown);
     return () => {
       if (typeInterval) clearInterval(typeInterval);
@@ -158,10 +166,7 @@
   </nav>
 
   {#if showConfirm}
-  <div class="confirm-overlay"
-       role="dialog"
-       aria-modal="true"
-       onkeydown={(e) => e.key === 'Escape' && (showConfirm = false)}>
+  <div class="confirm-overlay" role="dialog" aria-modal="true" onkeydown={(e) => e.key === 'Escape' && (showConfirm = false)}>
     <div class="confirm-box">
       <p class="confirm-msg">Czy jesteś pewny? Postęp tej sesji zostanie utracony.</p>
       <div class="confirm-btns">
@@ -176,69 +181,60 @@
     <div class="chess-pattern-bg"></div>
 
     <div class="right-panel">
-      {#if currentWorkspace}
+      <!-- INTERAKTYWNY PANEL ZADANIA zamiast tablicy workspace -->
+      {#if currentMessageIndex > 0}
       <div class="workspace">
-        <span class="ws-tag">{currentWorkspace.tag}</span>
-        <h2 class="ws-title">{currentWorkspace.title}</h2>
-        {#if currentWorkspace.content}
-          <p class="ws-content">{currentWorkspace.content}</p>
-        {/if}
-        {#if currentWorkspace.stat}
-          <div class="ws-stat-block">
-            <span class="ws-stat">{currentWorkspace.stat}</span>
-            <span class="ws-stat-label">{currentWorkspace.stat_label}</span>
+        <span class="ws-tag">Wyzwanie</span>
+        <h2 class="ws-title">Złam Szyfr Cezara</h2>
+        
+        <div style="display: flex; flex-direction: column; gap: 0.8rem; margin-top: 1rem;">
+          <div style="background: rgba(106,117,155,0.08); padding: 1.2rem; border-radius: 12px; text-align: center;">
+            <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-primary); opacity: 0.7; display: block; margin-bottom: 0.5rem;">Szyfrogram</span>
+            <code style="font-family: 'Courier New', monospace; font-size: 1.6rem; font-weight: 700; color: var(--color-text); letter-spacing: 5px;">HLPZFRPWHLK</code>
           </div>
-        {/if}
-        {#if currentWorkspace.examples}
-          <div class="ws-examples">
-            {#each currentWorkspace.examples as ex}
-              <div class="ws-example" class:ws-bad={ex.bad} class:ws-good={!ex.bad}>
-                <span class="ws-ex-label">{ex.label}</span>
-                <code class="ws-ex-value">{ex.value}</code>
-              </div>
-            {/each}
+          
+          <div style="background: rgba(106,117,155,0.04); padding: 0.8rem; border-radius: 12px; text-align: center; border: 2px dashed rgba(106,117,155,0.2);">
+            <strong style="color: var(--color-primary); font-size: 1.1rem;">Klucz: +3</strong>
           </div>
-        {/if}
-        {#if currentWorkspace.items}
-          <ul class="ws-list">
-            {#each currentWorkspace.items as item}
-              <li class="ws-item">{item}</li>
-            {/each}
-          </ul>
-        {/if}
-        {#if currentWorkspace.steps}
-          <ol class="ws-steps">
-            {#each currentWorkspace.steps as step}
-              <li class="ws-step">{step}</li>
-            {/each}
-          </ol>
-        {/if}
-        {#if currentWorkspace.cards}
-          <div class="ws-grid">
-            {#each currentWorkspace.cards as card}
-              <div class="ws-card">
-                <strong class="ws-card-head">{card.head}</strong>
-                <span class="ws-card-body">{card.body}</span>
-              </div>
-            {/each}
-          </div>
-        {/if}
-        {#if currentWorkspace.bars}
-          <div class="ws-bars">
-            {#each currentWorkspace.bars as bar}
-              <div class="ws-bar-row">
-                <span class="ws-bar-label">{bar.label}</span>
-                <div class="ws-bar-track">
-                  <div class="ws-bar-fill" style="width: {bar.value}%"></div>
-                </div>
-                <span class="ws-bar-val">{bar.value}%</span>
-              </div>
-            {/each}
-          </div>
-        {/if}
-        {#if currentWorkspace.note}
-          <p class="ws-note">{currentWorkspace.note}</p>
-        {/if}
+        </div>
+
+        <div class="ws-card" style="margin-top: 1rem; text-align: center;">
+          <strong class="ws-card-head">Alfabet Pomocniczy</strong>
+          <span class="ws-card-body" style="font-family: monospace; font-size: 1.2rem; letter-spacing: 4px; word-break: break-all; margin-top: 0.8rem; display: block;">
+            ABCDEFGHIJKLMNOPQRSTUVWXYZ
+          </span>
+          
+          {#if showHint}
+            <div style="margin-top: 1rem; color: var(--color-primary); font-weight: bold; font-size: 1.1rem;">
+              H ➔ K <span style="opacity: 0.7; font-weight: normal;">(przesunięcie +3)</span>
+            </div>
+          {/if}
+        </div>
+
+        <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem;">
+          <input 
+            type="text" 
+            bind:value={userInput}
+            placeholder="Wpisz rozwiązanie..."
+            disabled={isSuccess}
+            onkeydown={(e) => e.key === 'Enter' && !isSuccess && checkAnswer()}
+            style="padding: 0.8rem; border-radius: 8px; border: 2px solid {isError ? '#e05a5a' : isSuccess ? '#3cb464' : 'rgba(106,117,155,0.3)'}; background: rgba(106,117,155,0.05); color: var(--color-text); font-size: 1.1rem; text-align: center; text-transform: uppercase; outline: none; transition: border-color 0.2s;"
+          />
+          
+          {#if !isSuccess}
+            <button 
+              onclick={checkAnswer}
+              style="padding: 0.8rem; border-radius: 8px; background: var(--color-primary); color: white; font-weight: bold; cursor: pointer; border: none; transition: opacity 0.2s;"
+            >
+              Sprawdź odpowiedź
+            </button>
+          {/if}
+
+          {#if isError}
+            <p style="color: #e05a5a; text-align: center; margin: 0; font-size: 0.9rem; font-weight: 600;">To nie jest to słowo. Policz uważnie litery!</p>
+          {/if}
+        </div>
+
       </div>
       {/if}
 
@@ -253,9 +249,13 @@
         <p class="hint-text">
           {isTyping
             ? 'Skip'
-            : currentMessageIndex < messages.length - 1
-              ? 'Kontynuuj →'
-              : 'Przejdź dalej →'}
+            : isSuccess 
+              ? 'Przejdź dalej →'
+              : showHint 
+                ? 'Kliknij, aby podać odpowiedź wyżej ↑'
+                : currentMessageIndex < messages.length - 1
+                  ? 'Kontynuuj →'
+                  : 'Kliknij po podpowiedź 💡'}
         </p>
       </div>
     </div>

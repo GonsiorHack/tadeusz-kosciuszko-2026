@@ -7,63 +7,60 @@
   let showConfirm = $state(false);
 
   const messages = [
-    { text: "Musimy porozmawiać o sieci Wi-Fi. To kolejny front walki." },
-    { text: "Publiczne Wi-Fi to jak otwarty rynek — każdy może podsłuchiwać twoje rozmowy." },
-    { text: "Unikaj logowania do banku czy poczty na publicznym Wi-Fi." },
-    { text: "Jeśli musisz, używaj VPN — to jak szyfrowany tunel dla twoich danych." },
-    { text: "W domu? Zmień domyślne hasło routera i używaj szyfrowania WPA3." },
+    { text: "Świetnie sobie poradziłeś z Cezarem! Wiesz, że to doskonały przykład tak zwanego szyfrowania symetrycznego?" },
+    { text: "Szyfry symetryczne to po prostu takie, w których do zamknięcia i otwarcia 'kłódki' używamy dokładnie tego samego klucza." },
+    { text: "Oczywiście dzisiaj nie używamy metody Cezara. Współczesne komputery złamałyby ten szyfr w ułamku sekundy!" },
+    { text: "Zamiast tego używamy matematycznych potworów. Na przykład AES – to światowy standard, który w tej chwili chroni Twoje pieniądze w banku." },
+    { text: "Mamy też nowsze, lżejsze algorytmy, jak ChaCha20. Są idealne dla smartfonów, bo nie pożerają baterii." },
   ];
 
   let currentMessageIndex = $state(0);
 
   const workspace = [
     null,
-{
-      tag: 'Lekcja 4',
-      title: 'Zagrożenia publicznego Wi-Fi',
-      layout: 'list',
-      content: 'Otwarta sieć bez szyfrowania oznacza, że każdy w zasięgu może śledzić ruch sieciowy.',
-      items: [
-        'Atak "man in the middle" — przechwycenie komunikacji',
-        'Fałszywe hotspoty imitujące legalne sieci',
-        'Podsłuchanie haseł wysyłanych bez szyfrowania',
-      ],
-    },
-{
-      tag: 'Lekcja 4',
-      title: 'Czego nie robić na publicznym Wi-Fi',
+    {
+      tag: 'Teoria',
       layout: 'grid',
+      title: 'Szyfrowanie Symetryczne',
+      content: 'Zasada jest bardzo prosta: jeden klucz rządzi wszystkim.',
       cards: [
-        { head: 'Bankowość online', body: 'Logowanie do konta bankowego' },
-        { head: 'Zakupy online', body: 'Podawanie danych karty płatniczej' },
-        { head: 'Praca zdalna', body: 'Dostęp do firmowych systemów bez VPN' },
-        { head: 'Poczta e-mail', body: 'Logowanie bez szyfrowania end-to-end' },
-      ],
+        { head: 'Jeden Klucz', body: 'Do szyfrowania i deszyfrowania wiadomości używamy dokładnie tego samego sekretu.' },
+        { head: 'Przykład z historii', body: 'Szyfr Cezara, w którym kluczem było proste przesunięcie liter (np. +3).' }
+      ]
     },
-{
-      tag: 'Lekcja 4',
-      title: 'Jak działa VPN?',
-      layout: 'steps',
-      steps: [
-        'Aplikacja VPN szyfruje cały ruch Twojego urządzenia',
-        'Zaszyfrowane dane trafiają do serwera VPN',
-        'Serwer VPN wysyła żądanie dalej w Twoim imieniu',
-        'Odpowiedź wraca zaszyfrowanym tunelem do Ciebie',
-      ],
+    {
+      tag: 'Ciekawostka',
+      layout: 'stat',
+      title: 'Koniec ery Cezara',
+      stat: '< 1s',
+      stat_label: 'czas łamania',
+      content: 'Dzisiejsze maszyny obliczeniowe w ułamku sekundy potrafią sprawdzić wszystkie możliwe warianty przesunięć alfabetu w Szyfrze Cezara.',
+      note: 'Dlatego musieliśmy stworzyć coś znacznie bardziej skomplikowanego.'
     },
-{
-      tag: 'Lekcja 4',
-      title: 'Domowa sieć Wi-Fi',
-      layout: 'examples',
-      content: 'Porównaj poziom bezpieczeństwa protokołów:',
-      examples: [
-        { label: 'Przestarzały', value: 'WEP / WPA', bad: true },
-        { label: 'Bezpieczny', value: 'WPA3', bad: false },
-      ],
-      note: 'Zmień domyślne hasło routera i wybierz WPA3 w ustawieniach.',
+    {
+      tag: 'Standard',
+      layout: 'list',
+      title: 'AES',
+      content: 'Advanced Encryption Standard to światowy lider zabezpieczeń. Działa tak, że dzieli informację na małe bloki i wielokrotnie je ze sobą „miesza”.',
+      items: [
+        'Chroni Twoje pieniądze i bankowość elektroniczną',
+        'Zabezpiecza codzienne połączenia z Wi-Fi',
+        'Jest niezwykle szybki, nie spowalnia przesyłania danych',
+        'Zmienia treść w nieczytelny ciąg znaków'
+      ]
+    },
+    {
+      tag: 'Alternatywa',
+      layout: 'grid',
+      title: 'ChaCha20',
+      content: 'Nowoczesna i lżejsza alternatywa dla AES. W przeciwieństwie do niego, szyfruje dane bit po bicie (strumieniowo).',
+      cards: [
+        { head: 'Gdzie go znajdziesz?', body: 'Systemy Android, usługi Google oraz urządzenia Smart Home.' },
+        { head: 'Zalety', body: 'Zużywa znacznie mniej zasobów (prądu) niż AES, co jest kluczowe dla urządzeń mobilnych.' }
+      ]
     }
   ];
-
+  
   let currentWorkspace = $derived(workspace[currentMessageIndex] ?? null);
 
 

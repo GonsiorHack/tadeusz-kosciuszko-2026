@@ -7,59 +7,59 @@
   let showConfirm = $state(false);
 
   const messages = [
-    { text: "Inżynieria społeczna — najgroźniejsza broń królowej." },
-    { text: "To manipulacja ludźmi, a nie komputerami. Atakuje twój umysł." },
-    { text: "Ktoś dzwoni podając się za wsparcie techniczne i prosi o hasło? To atak!" },
-    { text: "Żadna legalna firma nigdy nie poprosi cię o hasło przez telefon." },
-    { text: "Bądź sceptyczny. Pytaj, weryfikuj, nie spiesz się z decyzjami pod presją." },
+    { text: "Wyśmienicie poradzisz sobie w cyfrowym świecie! Ale zanim przejdziemy dalej, musisz poznać dwóch gigantów asymetrii." },
+    { text: "Pierwszy to RSA. Prawdziwy pionier. Działa jak matematyczna pułapka oparta na mnożeniu." },
+    { text: "Niestety, komputery stają się tak potężne, że aby kłódki RSA były bezpieczne, muszą być dzisiaj bardzo ciężkie i nieporęczne." },
+    { text: "Dlatego do gry weszło ECC. Zamiast mnożyć monstrualne liczby, używa pięknej i skomplikowanej geometrii." },
+    { text: "Dzięki temu zapewnia to samo bezpieczeństwo, ale jest błyskawiczne i nie pożera baterii w Twoim telefonie!" },
   ];
 
   let currentMessageIndex = $state(0);
 
   const workspace = [
     null,
-{
-      tag: 'Lekcja 7',
-      title: 'Inżynieria społeczna',
+    {
+      tag: 'Klasyk',
       layout: 'list',
-      content: 'Atakujący manipuluje człowiekiem, nie oprogramowaniem. Wykorzystuje psychologię, nie exploity.',
+      title: 'Szyfr RSA',
+      content: 'RSA (Rivest-Shamir-Adleman) to najstarszy i najsłynniejszy szyfr asymetryczny na świecie. Powszechnie wykorzystuje się go na co dzień:',
       items: [
-        'Podszywanie się pod pracownika IT lub banku',
-        'Tworzenie fałszywego poczucia pilności',
-        'Budowanie pozornego zaufania przez kontakt z ofiarą',
-        'Prośba o "tylko chwilowy" dostęp lub hasło',
-      ],
+        'Zabezpiecza strony internetowe i logowanie',
+        'Służy do tworzenia podpisów elektronicznych',
+        'Chroni prywatność korespondencji e-mail'
+      ]
     },
-{
-      tag: 'Lekcja 7',
-      title: 'Popularne techniki',
+    {
+      tag: 'Matematyka',
       layout: 'grid',
+      title: 'Pułapka liczb pierwszych',
+      content: 'Bezpieczeństwo RSA opiera się na zastosowaniu dwóch ogromnych liczb pierwszych:',
       cards: [
-        { head: 'Pretexting', body: 'Wymyślony scenariusz uzasadniający prośbę' },
-        { head: 'Vishing', body: 'Phishing przez telefon — podszywanie się głosem' },
-        { head: 'Baiting', body: 'Zostawiony pendrive z malware "do znalezienia"' },
-        { head: 'Tailgating', body: 'Wejście do budynku za uprawnionym pracownikiem' },
+        { head: 'Klucz Publiczny (Łatwe)', body: 'Bardzo łatwo jest pomnożyć przez siebie dwie wielkie liczby, aby stworzyć publiczną kłódkę.' },
+        { head: 'Klucz Prywatny (Trudne)', body: 'Niezwykle ciężko jest odwrócić ten proces z powrotem. Wymaga to ogromnej mocy obliczeniowej.' }
       ],
+      note: 'Wada: Przez coraz szybsze komputery, klucze RSA muszą być z każdym rokiem większe.'
     },
-{
-      tag: 'Lekcja 7',
-      title: 'Żelazna zasada',
-      layout: 'stat',
-      content: 'Żadna prawdziwa firma, bank ani dział IT nigdy nie poprosi Cię o hasło przez telefon, e-mail lub chat. Jeśli ktoś prosi — to atak.',
-      note: 'Zawiesz się na chwilę. Zadzwoń pod oficjalny numer. Zweryfikuj.',
-      stat: '0',
-      stat_label: 'legalnych próśb o hasło',
+    {
+      tag: 'Nowoczesność',
+      layout: 'list',
+      title: 'Kryptografia ECC',
+      content: 'Kryptografia krzywych eliptycznych (ECC) to nowoczesny zastępca standardu RSA. Zamiast operować na gigantycznych liczbach, wykorzystuje zaawansowane reguły geometrii.',
+      items: [
+        'Zabezpiecza komunikację w WhatsAppie',
+        'Stanowi fundament bezpieczeństwa kryptowalut',
+        'Zabezpiecza m.in. nowoczesne e-paszporty'
+      ]
     },
-{
-      tag: 'Lekcja 7',
-      title: 'Jak się bronić?',
-      layout: 'steps',
-      steps: [
-        'Nigdy nie podawaj hasła nikomu — nawet "administratorowi"',
-        'Weryfikuj tożsamość przez inny kanał (np. zadzwoń do firmy)',
-        'Nie działaj pod presją — to celowo wywołany stres',
-        'Zgłoś próbę ataku do działu IT lub na Policję',
-      ],
+    {
+      tag: 'Wydajność',
+      layout: 'grid',
+      title: 'Dlaczego ECC wygrywa?',
+      content: 'Główną zaletą układów opartych na geometrii (ECC) jest potężna optymalizacja, niezbędna w erze smartfonów.',
+      cards: [
+        { head: 'Krótsze klucze', body: 'ECC oferuje ten sam, najwyższy poziom bezpieczeństwa co RSA, ale przy użyciu znacznie krótszych kluczy.' },
+        { head: 'Mobilność', body: 'Dzięki krótkiemu kluczowi szyfrowanie przebiega znacznie szybciej i praktycznie nie obciąża procesora ani baterii.' }
+      ]
     }
   ];
 

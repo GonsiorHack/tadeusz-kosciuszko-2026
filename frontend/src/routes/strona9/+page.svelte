@@ -1,119 +1,118 @@
 <script>
   import { onMount } from 'svelte';
 
-  let displayedText = $state('');
-  let isTyping = $state(false);
-  let typeInterval = undefined;
   let showConfirm = $state(false);
 
-  const messages = [
-    { text: "Kopie zapasowe — twoja ostatnia linia obrony." },
-    { text: "Ransomware może zablokować wszystkie twoje pliki i żądać okupu." },
-    { text: "Ale jeśli masz kopię zapasową — możesz się śmiać w twarz atakującemu!" },
-    { text: "Zasada 3-2-1: 3 kopie, na 2 różnych nośnikach, 1 poza domem (np. w chmurze)." },
-    { text: "Regularnie testuj, czy kopie działają. Kopia, której nie możesz przywrócić, to nie kopia." },
+  // Stan quizu
+  let currentQuestionIndex = $state(0);
+  let selectedOption = $state(null);
+  let isAnswered = $state(false);
+  let score = $state(0);
+  let quizFinished = $state(false);
+
+  // Zestaw pytań na finałową walkę
+  const questions = [
+    {
+      question: "Jak wyglądałaby wiadomość 'CYBER' po zaszyfrowaniu Szyfrem Cezara (klucz: +3)?",
+      options: ["FBEHU", "ZXABO", "DBAFS", "FDFJW"],
+      correctIndex: 0,
+      explanation: "C staje się F, Y wraca na początek jako B, B to E, E to H, a R to U."
+    },
+    {
+      question: "W jakiej dziedzinie wykorzystuje się obecnie kryptografię?",
+      options: [
+        "Tylko w bankowości elektronicznej",
+        "Tylko do zabezpieczania komunikatorów",
+        "Tylko do ukrywania plików na dysku",
+        "We wszystkich powyższych przykładach"
+      ],
+      correctIndex: 3,
+      explanation: "Kryptografia to fundament całego dzisiejszego cyfrowego świata."
+    },
+    {
+      question: "Zaznacz PRAWDZIWE zdanie dotyczące szyfrów:",
+      options: [
+        "W szyfrach asymetrycznych tylko Ty masz dostęp do publicznej kłódki",
+        "Szyfry symetryczne nie są już w ogóle używane",
+        "W szyfrach symetrycznych używamy tego samego klucza do szyfrowania i deszyfrowania",
+        "AES to najstarszy szyfr asymetryczny"
+      ],
+      correctIndex: 2,
+      explanation: "Symetria oznacza dokładnie ten sam klucz po obu stronach."
+    },
+    {
+      question: "Dlaczego AES nazywamy szyfrem „blokowym”?",
+      options: [
+        "Ponieważ blokuje dostęp do internetu podczas szyfrowania",
+        "Ponieważ szyfruje dane w małych, równych porcjach (blokach)",
+        "Ponieważ jest zablokowany dla zwykłych użytkowników",
+        "Ponieważ wymyślono go w bloku mieszkalnym"
+      ],
+      correctIndex: 1,
+      explanation: "AES dzieli dane na równe paczki i wielokrotnie je ze sobą miesza."
+    },
+    {
+      question: "Szyfrowanie ECC (Krzywe Eliptyczne):",
+      options: [
+        "Wyróżnia się użyciem dwóch ogromnych liczb pierwszych (mnożenie)",
+        "Jest najstarszym sposobem szyfrowania na świecie",
+        "Jest wykorzystywane m.in. w WhatsAppie i oszczędza baterię",
+        "Jest klasycznym przykładem szyfrowania symetrycznego"
+      ],
+      correctIndex: 2,
+      explanation: "ECC używa geometrii, dzięki czemu klucze są krótkie, a obliczenia nie obciążają baterii smartfonów."
+    },
+    {
+      question: "Jaka jest właściwa kolejność wysyłania tajnej wiadomości do znajomego (asymetrycznie)?",
+      options: [
+        "Piszesz tekst ➔ Szyfrujesz SWOIM prywatnym kluczem ➔ Wysyłasz",
+        "Pobierasz kłódkę (Klucz Publiczny znajomego) ➔ Szyfrujesz ➔ Wysyłasz",
+        "Wysyłasz tekst ➔ Znajomy szyfruje kłódką ➔ Znajomy odsyła",
+        "Szyfrujesz hasłem '123' ➔ Wysyłasz pocztą ➔ Zmieniasz hasło"
+      ],
+      correctIndex: 1,
+      explanation: "Zawsze musisz wziąć publiczną kłódkę odbiorcy, by zamknąć w niej wiadomość."
+    },
+    {
+      question: "Dlaczego w ogóle używamy szyfrowania asymetrycznego (kłódka/klucz), skoro szyfry symetryczne (AES) są szybsze?",
+      options: [
+        "Bo w internecie ciężko jest bezpiecznie przekazać komuś ten sam tajny klucz.",
+        "Ponieważ szyfry asymetryczne są ładniejsze wizualnie w kodzie.",
+        "To kłamstwo, szyfry symetryczne są dużo wolniejsze.",
+        "Ponieważ wymaga tego nowa dyrektywa Unii Europejskiej."
+      ],
+      correctIndex: 0,
+      explanation: "Kryptografia asymetryczna genialnie rozwiązuje problem przekazywania kluczy na odległość!"
+    }
   ];
 
-  let currentMessageIndex = $state(0);
-
-  const workspace = [
-    null,
-{
-      tag: 'Lekcja 8',
-      title: 'Ransomware — realne zagrożenie',
-      layout: 'list',
-      content: 'Ransomware szyfruje Twoje pliki i żąda okupu za klucz deszyfrujący.',
-      items: [
-        'Atak może przyjść przez e-mail, pendrive lub przeglądarkę',
-        'Zaszyfrowane pliki są dla Ciebie niedostępne',
-        'Okup zwykle żądany w kryptowalucie (od 500 do kilku mln zł)',
-        'Zapłacenie nie gwarantuje odzyskania danych',
-      ],
-    },
-{
-      tag: 'Lekcja 8',
-      title: 'Zasada 3-2-1',
-      layout: 'steps',
-      steps: [
-        '3 kopie danych (oryginał + 2 kopie zapasowe)',
-        '2 różne nośniki (np. dysk zewnętrzny + chmura)',
-        '1 kopia poza lokalizacją (np. zdalny serwer)',
-        'Testuj przywracanie przynajmniej raz na kwartał',
-      ],
-    },
-{
-      tag: 'Lekcja 8',
-      title: 'Ile kosztuje utrata danych?',
-      layout: 'stat',
-      content: 'dla małej i średniej firmy w Polsce (2024). Koszt kopii zapasowej to ułamek tej kwoty.',
-      note: 'Dla osoby prywatnej: utracone zdjęcia, dokumenty, praca — bezcenne.',
-      stat: '4,5 mln zł',
-      stat_label: 'średni koszt ataku ransomware',
-    },
-{
-      tag: 'Lekcja 8',
-      title: 'Nośniki kopii — dostępność i szybkość',
-      layout: 'bars',
-      content: 'Porównanie szybkości i łatwości przywrócenia danych:',
-      bars: [
-        { label: 'Chmura', value: 95 },
-        { label: 'NAS domowy', value: 80 },
-        { label: 'Dysk zewnętrzny', value: 68 },
-        { label: 'Taśma magnetyczna', value: 28 },
-      ],
-      note: 'Szybkość ≠ bezpieczeństwo. Taśma jest najtrudniejsza do zhakowania zdalnie.'
+  // Dynamiczny dymek postaci w zależności od sytuacji
+  let bossDialogue = $derived(() => {
+    if (quizFinished) {
+      return score >= 5 ? "Niemożliwe! Pokonałeś mnie! Znasz moje sekrety!" : "Hahaha! Twoja wiedza jest zbyt słaba. Zostajesz zhakowany!";
     }
-  ];
+    if (!isAnswered) return "Przygotuj się na cios! " + (currentQuestionIndex + 1) + " / " + questions.length;
+    if (selectedOption === questions[currentQuestionIndex].correctIndex) return "Agh! Jak mogłeś to wiedzieć?!";
+    return "Hahaha! Błędna odpowiedź! Mój szyfr jest nie do złamania!";
+  });
 
-  let currentWorkspace = $derived(workspace[currentMessageIndex] ?? null);
-
-
-  function typeMessage() {
-    if (typeInterval) clearInterval(typeInterval);
-    isTyping = true;
-    displayedText = '';
-    const fullText = messages[currentMessageIndex].text;
-    let charIndex = 0;
-    typeInterval = setInterval(() => {
-      if (charIndex < fullText.length) {
-        displayedText += fullText[charIndex];
-        charIndex++;
-      } else {
-        clearInterval(typeInterval);
-        isTyping = false;
-      }
-    }, 50);
-  }
-
-  function handleAdvance() {
-    if (isTyping) {
-      clearInterval(typeInterval);
-      displayedText = messages[currentMessageIndex].text;
-      isTyping = false;
-      return;
-    }
-    if (currentMessageIndex < messages.length - 1) {
-      currentMessageIndex++;
-      sessionStorage.setItem('strona9_index', currentMessageIndex.toString());
-      typeMessage();
-    } else {
-      location.href = '/strona10';
+  function selectOption(index) {
+    if (isAnswered) return; // Zablokuj klikanie po udzieleniu odpowiedzi
+    selectedOption = index;
+    isAnswered = true;
+    
+    if (index === questions[currentQuestionIndex].correctIndex) {
+      score++;
     }
   }
 
-  function handleBack() {
-    if (isTyping) {
-      clearInterval(typeInterval);
-      displayedText = messages[currentMessageIndex].text;
-      isTyping = false;
-      return;
-    }
-    if (currentMessageIndex > 0) {
-      currentMessageIndex--;
-      sessionStorage.setItem('strona9_index', currentMessageIndex.toString());
-      typeMessage();
+  function nextQuestion() {
+    if (currentQuestionIndex < questions.length - 1) {
+      currentQuestionIndex++;
+      selectedOption = null;
+      isAnswered = false;
     } else {
-      location.href = '/strona8';
+      quizFinished = true;
     }
   }
 
@@ -122,52 +121,46 @@
       if (e.key === 'Escape') { e.preventDefault(); showConfirm = false; }
       return;
     }
-    if (['INPUT', 'TEXTAREA', 'BUTTON'].includes(e.target.tagName)) return;
     if (e.key === ' ' || e.key === 'Enter') {
       e.preventDefault();
-      handleAdvance();
+      if (isAnswered && !quizFinished) {
+        nextQuestion();
+      } else if (quizFinished) {
+        location.href = '/strona10'; // <- Zmień na to, co ma być po walce
+      }
     }
   }
 
   onMount(() => {
-    const savedIndex = sessionStorage.getItem('strona9_index');
-    if (savedIndex) {
-      currentMessageIndex = parseInt(savedIndex);
-    }
-    typeMessage();
     window.addEventListener('keydown', handleKeydown);
     return () => {
-      if (typeInterval) clearInterval(typeInterval);
       window.removeEventListener('keydown', handleKeydown);
     };
   });
 </script>
 
-<main>
-  <nav class="glass-nav">
+<main class="boss-fight-bg">
+  <nav class="glass-nav" style="border-bottom-color: rgba(255,100,100,0.3);">
     <div class="nav-container">
-      <button class="back-button" onclick={handleBack} aria-label="Cofnij">
+      <button class="back-button" aria-label="Cofnij" disabled style="opacity: 0.5; cursor: not-allowed;">
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
           <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </button>
-      <button class="page-title-btn" onclick={() => showConfirm = true}>
-        {import.meta.env.VITE_APP_NAME}
+      <button class="page-title-btn" style="color: #e05a5a;">
+        WALKA Z KRÓLOWĄ
       </button>
-      <div class="page-counter">9 / 10</div>
+      <div class="page-counter" style="color: #e05a5a;">HP: {score} / {questions.length}</div>
     </div>
   </nav>
 
   {#if showConfirm}
-  <div class="confirm-overlay"
-       role="dialog"
-       aria-modal="true"
-       onkeydown={(e) => e.key === 'Escape' && (showConfirm = false)}>
+  <div class="confirm-overlay" role="dialog" aria-modal="true" onkeydown={(e) => e.key === 'Escape' && (showConfirm = false)}>
     <div class="confirm-box">
-      <p class="confirm-msg">Czy jesteś pewny? Postęp tej sesji zostanie utracony.</p>
+      <p class="confirm-msg">Czy jesteś pewny? Ucieczka z pola walki zresetuje Twój postęp.</p>
       <div class="confirm-btns">
-        <button class="confirm-yes" onclick={() => { sessionStorage.clear(); location.href = '/'; }}>Tak, wróć do menu</button>
-        <button class="confirm-no" onclick={() => showConfirm = false}>Nie, kontynuuj</button>
+        <button class="confirm-yes" onclick={() => { sessionStorage.clear(); location.href = '/'; }}>Uciekaj</button>
+        <button class="confirm-no" onclick={() => showConfirm = false}>Walcz dalej</button>
       </div>
     </div>
   </div>
@@ -177,98 +170,165 @@
     <div class="chess-pattern-bg"></div>
 
     <div class="right-panel">
-      {#if currentWorkspace}
-      <div class="workspace">
-        <span class="ws-tag">{currentWorkspace.tag}</span>
-        <h2 class="ws-title">{currentWorkspace.title}</h2>
-        {#if currentWorkspace.content}
-          <p class="ws-content">{currentWorkspace.content}</p>
-        {/if}
-        {#if currentWorkspace.stat}
-          <div class="ws-stat-block">
-            <span class="ws-stat">{currentWorkspace.stat}</span>
-            <span class="ws-stat-label">{currentWorkspace.stat_label}</span>
-          </div>
-        {/if}
-        {#if currentWorkspace.examples}
-          <div class="ws-examples">
-            {#each currentWorkspace.examples as ex}
-              <div class="ws-example" class:ws-bad={ex.bad} class:ws-good={!ex.bad}>
-                <span class="ws-ex-label">{ex.label}</span>
-                <code class="ws-ex-value">{ex.value}</code>
-              </div>
-            {/each}
-          </div>
-        {/if}
-        {#if currentWorkspace.items}
-          <ul class="ws-list">
-            {#each currentWorkspace.items as item}
-              <li class="ws-item">{item}</li>
-            {/each}
-          </ul>
-        {/if}
-        {#if currentWorkspace.steps}
-          <ol class="ws-steps">
-            {#each currentWorkspace.steps as step}
-              <li class="ws-step">{step}</li>
-            {/each}
-          </ol>
-        {/if}
-        {#if currentWorkspace.cards}
-          <div class="ws-grid">
-            {#each currentWorkspace.cards as card}
-              <div class="ws-card">
-                <strong class="ws-card-head">{card.head}</strong>
-                <span class="ws-card-body">{card.body}</span>
-              </div>
-            {/each}
-          </div>
-        {/if}
-        {#if currentWorkspace.bars}
-          <div class="ws-bars">
-            {#each currentWorkspace.bars as bar}
-              <div class="ws-bar-row">
-                <span class="ws-bar-label">{bar.label}</span>
-                <div class="ws-bar-track">
-                  <div class="ws-bar-fill" style="width: {bar.value}%"></div>
-                </div>
-                <span class="ws-bar-val">{bar.value}%</span>
-              </div>
-            {/each}
-          </div>
-        {/if}
-        {#if currentWorkspace.note}
-          <p class="ws-note">{currentWorkspace.note}</p>
-        {/if}
-      </div>
-      {/if}
+      <div class="workspace" style="border-color: rgba(224, 90, 90, 0.4); box-shadow: 0 10px 40px rgba(224, 90, 90, 0.15);">
+        
+        {#if !quizFinished}
+          <span class="ws-tag" style="color: #e05a5a;">Pytanie {currentQuestionIndex + 1} z {questions.length}</span>
+          <h2 class="ws-title" style="color: #2a2a2a; margin-bottom: 1.5rem; font-size: 1.3rem;">
+            {questions[currentQuestionIndex].question}
+          </h2>
 
-      <div class="dialogue-area"
-           onclick={handleAdvance}
-           onkeydown={(e) => (e.key === 'Enter' || e.key === ' ') && handleAdvance()}
-           role="button"
-           tabindex="0">
-        <div class="speech-bubble">
-          <p class="bubble-text">{displayedText}{isTyping ? '◌' : ''}</p>
+          <div style="display: flex; flex-direction: column; gap: 0.8rem; flex: 1;">
+            {#each questions[currentQuestionIndex].options as option, index}
+              <button 
+                class="quiz-option"
+                class:selected={selectedOption === index}
+                class:correct={isAnswered && index === questions[currentQuestionIndex].correctIndex}
+                class:wrong={isAnswered && selectedOption === index && index !== questions[currentQuestionIndex].correctIndex}
+                disabled={isAnswered}
+                onclick={() => selectOption(index)}
+              >
+                <div class="option-letter">{['A', 'B', 'C', 'D'][index]}</div>
+                <div class="option-text">{option}</div>
+              </button>
+            {/each}
+          </div>
+
+          {#if isAnswered}
+            <div style="margin-top: 1.5rem; padding: 1rem; background: rgba(106,117,155,0.08); border-radius: 12px; border-left: 4px solid {selectedOption === questions[currentQuestionIndex].correctIndex ? '#3cb464' : '#e05a5a'}; animation: wsFadeIn 0.3s ease;">
+              <strong style="display: block; margin-bottom: 0.3rem; color: {selectedOption === questions[currentQuestionIndex].correctIndex ? '#3cb464' : '#e05a5a'};">
+                {selectedOption === questions[currentQuestionIndex].correctIndex ? 'Dobry cios!' : 'Pudło!'}
+              </strong>
+              <span style="font-size: 0.9rem; color: var(--color-text);">{questions[currentQuestionIndex].explanation}</span>
+            </div>
+
+            <button 
+              onclick={nextQuestion}
+              style="margin-top: 1rem; width: 100%; padding: 1rem; background: #2a2a2a; color: white; border-radius: 8px; font-weight: bold; border: none; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; transition: 0.2s;"
+            >
+              {currentQuestionIndex < questions.length - 1 ? 'Następne pytanie' : 'Zakończ walkę'}
+            </button>
+          {/if}
+
+        {:else}
+          <div style="text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%;">
+            <span style="font-size: 4rem; margin-bottom: 1rem;">
+              {score >= 5 ? '🏆' : '💀'}
+            </span>
+            <h2 style="font-size: 2rem; color: #2a2a2a; margin-bottom: 0.5rem;">
+              {score >= 5 ? 'Zwycięstwo!' : 'Porażka...'}
+            </h2>
+            <p style="font-size: 1.2rem; color: var(--color-text); margin-bottom: 2rem;">
+              Twój wynik: <strong>{score} / {questions.length}</strong>
+            </p>
+            
+            <button 
+              onclick={() => location.href = '/strona10'}
+              style="padding: 1rem 2rem; background: var(--color-primary); color: white; border-radius: 8px; font-weight: bold; border: none; cursor: pointer; text-transform: uppercase; letter-spacing: 1px;"
+            >
+              Zakończ walkę
+            </button>
+          </div>
+        {/if}
+
+      </div>
+
+      <div class="dialogue-area" onclick={() => isAnswered && !quizFinished && nextQuestion()} style="cursor: {isAnswered && !quizFinished ? 'pointer' : 'default'}">
+        <div class="speech-bubble" style="border-color: rgba(224, 90, 90, 0.4);">
+          <p class="bubble-text" style="color: #5a2020; font-weight: bold;">{bossDialogue()}</p>
         </div>
-        <p class="hint-text">
-          {isTyping
-            ? 'Skip'
-            : currentMessageIndex < messages.length - 1
-              ? 'Kontynuuj →'
-              : 'Przejdź dalej →'}
-        </p>
+        {#if isAnswered && !quizFinished}
+          <p class="hint-text" style="color: #e05a5a;">Kliknij Spację, by zadać kolejny cios →</p>
+        {/if}
       </div>
     </div>
 
     <div class="king-abs-wrap">
-      <div class="king-abs-glow"></div>
-      <img class="king-abs-img" src="/src/lib/assets/whiteKing.svg" alt="White King" />
+      <div class="king-abs-glow" style="background: radial-gradient(circle, rgba(224, 90, 90, 0.3) 0%, transparent 70%);"></div>
+      <img 
+        class="king-abs-img boss-img" 
+        src="/src/lib/assets/whiteKing.svg" 
+        alt="Wroga Królowa" 
+        style="filter: drop-shadow(0 10px 30px rgba(224, 90, 90, 0.4)) invert(0.8) hue-rotate(180deg);" 
+      />
     </div>
   </section>
 </main>
 
 <style>
+:global(.boss-fight-bg) {
+    background: linear-gradient(135deg, #f5eaea 0%, #e8d8d8 50%, #f0e4e4 100%) !important;
+  }
+  :global(.boss-fight-bg .chess-pattern-bg) {
+    background-image:
+      linear-gradient(45deg, rgba(224,90,90,0.1) 25%, transparent 25%),
+      linear-gradient(-45deg, rgba(224,90,90,0.1) 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, rgba(224,90,90,0.1) 75%),
+      linear-gradient(-45deg, transparent 75%, rgba(224,90,90,0.1) 75%) !important;
+  }
+  
+  .boss-img {
+    animation: floatBoss 4s ease-in-out infinite !important;
+  }
+  @keyframes floatBoss {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-15px) scale(1.02); }
+  }
+
+  .quiz-option {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: white;
+    border: 2px solid rgba(106,117,155,0.2);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+  }
+  .quiz-option:not(:disabled):hover {
+    border-color: var(--color-primary);
+    background: rgba(106,117,155,0.05);
+    transform: translateX(5px);
+  }
+  
+  .option-letter {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(106,117,155,0.1);
+    color: var(--color-primary);
+    font-weight: 800;
+    border-radius: 8px;
+    flex-shrink: 0;
+  }
+  .option-text {
+    font-size: 0.95rem;
+    color: var(--color-text);
+    font-weight: 500;
+    line-height: 1.4;
+  }
+
+  .quiz-option.correct {
+    border-color: #3cb464;
+    background: rgba(60, 180, 100, 0.08);
+  }
+  .quiz-option.correct .option-letter {
+    background: #3cb464;
+    color: white;
+  }
+  .quiz-option.wrong {
+    border-color: #e05a5a;
+    background: rgba(224, 90, 90, 0.08);
+    opacity: 0.8;
+  }
+  .quiz-option.wrong .option-letter {
+    background: #e05a5a;
+    color: white;
+  }
 :root {
   --color-primary: #6A759B;
   --color-text: #373A40;

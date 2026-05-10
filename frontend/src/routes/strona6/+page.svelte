@@ -7,59 +7,58 @@
   let showConfirm = $state(false);
 
   const messages = [
-    { text: "Uwierzytelnianie dwuskładnikowe — moja ulubiona tarcza!" },
-    { text: "2FA to dodatkowa warstwa ochrony poza hasłem." },
-    { text: "Nawet jeśli ktoś zdobędzie twoje hasło, bez drugiego składnika nie wejdzie." },
-    { text: "Może to być SMS, aplikacja authenticator albo klucz sprzętowy." },
-    { text: "Włącz 2FA wszędzie, gdzie możesz. Zrób to dziś, nie jutro!" },
+    { text: "Szyfry symetryczne, jak AES, są niesamowicie szybkie. Mają jednak pewien potężny słaby punkt..." },
+    { text: "Skoro używamy jednego klucza... Jak bezpiecznie przekazać go komuś na drugim końcu świata, żeby nikt go nie przechwycił w drodze?" },
+    { text: "Rozwiązaniem tego problemu jest kryptografia asymetryczna. Tutaj nie mamy jednego klucza, lecz unikalną parę!" },
+    { text: "Pierwszy to klucz publiczny. Wyobraź go sobie jako otwartą kłódkę, którą rozdajesz każdemu. Każdy może zamknąć nią wiadomość do Ciebie." },
+    { text: "Drugi to klucz prywatny. Masz go tylko Ty. Gdy ktoś zatrzaśnie Twoją publiczną kłódkę, tylko ten prywatny klucz może ją z powrotem otworzyć." },
   ];
 
   let currentMessageIndex = $state(0);
 
   const workspace = [
     null,
-{
-      tag: 'Lekcja 5',
-      title: 'Co to jest 2FA?',
+    {
+      tag: 'Wyzwanie',
       layout: 'list',
-      content: 'Uwierzytelnianie dwuskładnikowe (2FA) wymaga dwóch niezależnych dowodów tożsamości.',
+      title: 'Problem dystrybucji klucza',
+      content: 'W szyfrowaniu symetrycznym obie strony muszą posiadać ten sam tajny klucz przed rozpoczęciem rozmowy. Ale jak go bezpiecznie wymienić w niezabezpieczonym internecie?',
       items: [
-        'Coś, co znasz — hasło lub PIN',
-        'Coś, co masz — telefon, klucz sprzętowy',
-        'Coś, czym jesteś — odcisk palca, twarz',
-      ],
+        'Wysłanie klucza wprost grozi jego przechwyceniem.',
+        'Jeśli haker zdobędzie klucz, całe szyfrowanie (nawet potężny AES) traci sens.',
+        'Potrzebowaliśmy sposobu na komunikację bez wcześniejszego wymieniania się sekretami.'
+      ]
     },
-{
-      tag: 'Lekcja 5',
-      title: 'Czemu hasło nie wystarczy?',
-      layout: 'stat',
-      content: 'jest możliwe dzięki skradzionym lub słabym hasłom. Drugie składnik blokuje atakującego nawet gdy hasło wycieknie.',
-      note: 'Jeden wyciek danych = potencjalny dostęp do wszystkich Twoich kont bez 2FA.',
-      stat: '81%',
-      stat_label: 'włamań do kont',
+    {
+      tag: 'Przełom',
+      layout: 'grid',
+      title: 'Dwa różne klucze',
+      content: 'Kryptografia asymetryczna genialnie rozwiązuje ten problem, dzieląc role na dwie części:',
+      cards: [
+        { head: 'Klucz Publiczny (Kłódka)', body: 'Dostępny dla wszystkich w internecie. Służy WYŁĄCZNIE do zamykania (szyfrowania) wiadomości.' },
+        { head: 'Klucz Prywatny (Właściwy Klucz)', body: 'Trzymany w absolutnej tajemnicy na Twoim urządzeniu. Służy WYŁĄCZNIE do otwierania (deszyfrowania).' }
+      ]
     },
-{
-      tag: 'Lekcja 5',
-      title: 'Metody 2FA — poziom bezpieczeństwa',
-      layout: 'bars',
-      content: 'Im wyższy wynik, tym trudniej obejść ten rodzaj 2FA:',
-      bars: [
-        { label: 'Klucz sprzętowy', value: 99 },
-        { label: 'Aplikacja TOTP', value: 82 },
-        { label: 'SMS', value: 48 },
-        { label: 'E-mail', value: 30 },
-      ],
-    },
-{
-      tag: 'Lekcja 5',
-      title: 'Jak włączyć 2FA?',
+    {
+      tag: 'Mechanizm',
       layout: 'steps',
+      title: 'Jak wysłać tajną wiadomość?',
+      content: 'Wyobraź sobie, że chcesz wysłać mi tajny raport. Oto co musisz zrobić:',
       steps: [
-        'Wejdź w ustawienia bezpieczeństwa konta',
-        'Wybierz "Weryfikacja dwuetapowa" lub "2FA"',
-        'Zainstaluj aplikację: Aegis (Android) lub Raivo (iOS)',
-        'Zeskanuj kod QR i zapisz kody zapasowe w bezpiecznym miejscu',
-      ],
+        'Pobierasz moją "publiczną kłódkę" (mój klucz publiczny).',
+        'Wkładasz raport do skrzynki.',
+        'Zatrzaskujesz kłódkę na skrzynce. Od tego momentu nawet Ty nie możesz jej otworzyć!',
+        'Wysyłasz zamkniętą skrzynkę do mnie.'
+      ]
+    },
+    {
+      tag: 'Bezpieczeństwo',
+      layout: 'stat',
+      title: 'Tylko dla Twoich oczu',
+      stat: 'Prywatność',
+      stat_label: 'absolutna',
+      content: 'Zamkniętą skrzynkę można odszyfrować tylko za pomocą pasującego klucza prywatnego. Skoro mam go tylko ja, nikt po drodze (nawet haker, który przechwyci skrzynkę) nie odczyta Twojego raportu.',
+      note: 'Właśnie tak działa zielona kłódka (HTTPS) w przeglądarce, gdy logujesz się do banku!'
     }
   ];
 

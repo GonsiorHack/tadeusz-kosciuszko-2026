@@ -6,71 +6,41 @@
   let typeInterval = undefined;
   let showConfirm = $state(false);
 
-  const messages = [
-    { text: "Prywatność w sieci — często niedoceniana, ale kluczowa." },
-    { text: "Każda aplikacja, której dajesz dostęp do lokalizacji czy kontaktów, może te dane zbierać." },
-    { text: "Czytaj polityki prywatności. Wiem, wiem — nikt tego nie robi. Ale warto!" },
-    { text: "Regularnie sprawdzaj uprawnienia aplikacji i usuwaj te, których nie używasz." },
-    { text: "Twoje dane to twój skarb. Chroń je jak ja chronię swój tron." },
+  // Stan specyficzny dla zadania
+  let isSuccess = $state(false);
+  let isError = $state(false);
+  let showHint = $state(false);
+
+  // Tablica przechowująca wybory użytkownika dla 5 kroków
+  let answers = $state(['', '', '', '', '']);
+  
+  // Prawidłowe odpowiedzi: jawny, szyfr, szyfr, szyfr, jawny
+  const correctAnswers = ['jawny', 'szyfr', 'szyfr', 'szyfr', 'jawny'];
+
+  const journeySteps = [
+    "1. Nadawca pisze wiadomość",
+    "2. Moment zaszyfrowania kłódką",
+    "3. Podróż przez dziki Internet",
+    "4. Dotarcie na urządzenie odbiorcy",
+    "5. Odszyfrowanie prywatnym kluczem"
   ];
+
+  const messages = [
+    { text: "Skoro wiesz już, po co nam te dwa klucze... czas na mały test!" },
+    { text: "Wyobraź sobie, że wiadomość wyrusza w podróż od nadawcy do odbiorcy." },
+    { text: "Twoim zadaniem jest określić, w jakiej formie znajduje się ta wiadomość na poszczególnych etapach." },
+    { text: "Zaznacz odpowiedni stan z listy przy każdym kroku. Jeśli utkniesz, kliknij we mnie po małą wskazówkę!" },
+  ];
+
+  const hintMessage = "Podpowiedź: Pomyśl logicznie. Kto ma prawo przeczytać tekst? Tylko ten kto go pisze i ten kto go odbiera! Przez całą resztę drogi wiadomość musi być ukryta.";
+  const successMessage = "Znakomicie! Zrozumiałeś to perfekcyjnie. Wiadomość jest w pełni bezpieczna tylko wtedy, gdy podróżuje jako szyfrogram. Kliknij, by iść dalej.";
 
   let currentMessageIndex = $state(0);
 
-  const workspace = [
-    null,
-{
-      tag: 'Lekcja 6',
-      title: 'Ślad cyfrowy',
-      layout: 'list',
-      content: 'Każde Twoje działanie w sieci pozostawia ślad, który może być zbierany i sprzedawany.',
-      items: [
-        'Historia przeglądania i wyszukiwań',
-        'Lokalizacja GPS z aplikacji mobilnych',
-        'Dane z formularzy i zakupów online',
-        'Metadane zdjęć (czas, miejsce wykonania)',
-      ],
-    },
-{
-      tag: 'Lekcja 6',
-      title: 'Co zbierają aplikacje?',
-      layout: 'grid',
-      cards: [
-        { head: 'Lokalizacja', body: 'Nawet gdy aplikacja działa w tle' },
-        { head: 'Kontakty', body: 'Pełna lista Twoich znajomych' },
-        { head: 'Mikrofon', body: 'Potencjalnie stały dostęp do nagrywania' },
-        { head: 'Schowek', body: 'Może odczytać hasła kopiowane do klipboardu' },
-      ],
-    },
-{
-      tag: 'Lekcja 6',
-      title: 'Polityki prywatności',
-      layout: 'stat',
-      content: 'zajmuje przeciętna polityka prywatności dużego serwisu. Na szczęście wystarczy szukać kluczowych fraz: "udostępniamy partnerom", "dane sprzedajemy", "personalizacja reklam".',
-      note: 'Sprawdź: czy serwis szyfruje dane? Czy pozwala usunąć konto?',
-      stat: '45 min',
-      stat_label: 'na przeczytanie',
-    },
-{
-      tag: 'Lekcja 6',
-      title: 'Chroń swoją prywatność',
-      layout: 'steps',
-      steps: [
-        'Przeglądaj ustawienia uprawnień aplikacji co miesiąc',
-        'Usuń aplikacje, których nie używasz',
-        'Korzystaj z przeglądarki z adblockerem (np. Firefox + uBlock)',
-        'Rozważ wyszukiwarkę DuckDuckGo zamiast Google',
-      ],
-    }
-  ];
-
-  let currentWorkspace = $derived(workspace[currentMessageIndex] ?? null);
-
-
-  function typeMessage() {
+  function typeText(fullText) {
     if (typeInterval) clearInterval(typeInterval);
     isTyping = true;
     displayedText = '';
-    const fullText = messages[currentMessageIndex].text;
     let charIndex = 0;
     typeInterval = setInterval(() => {
       if (charIndex < fullText.length) {
@@ -83,35 +53,84 @@
     }, 50);
   }
 
+  function typeCurrentMessage() {
+    typeText(messages[currentMessageIndex].text);
+  }
+
   function handleAdvance() {
     if (isTyping) {
       clearInterval(typeInterval);
-      displayedText = messages[currentMessageIndex].text;
+      if (isSuccess) displayedText = successMessage;
+      else if (showHint) displayedText = hintMessage;
+      else displayedText = messages[currentMessageIndex].text;
+      
       isTyping = false;
       return;
     }
+
+    if (isSuccess) {
+      location.href = '/strona8'; // Przejście do kolejnej lekcji
+      return;
+    }
+
     if (currentMessageIndex < messages.length - 1) {
       currentMessageIndex++;
       sessionStorage.setItem('strona7_index', currentMessageIndex.toString());
-      typeMessage();
+      typeCurrentMessage();
     } else {
-      location.href = '/strona8';
+      if (!showHint) {
+        showHint = true;
+        typeText(hintMessage);
+      }
     }
   }
 
   function handleBack() {
     if (isTyping) {
       clearInterval(typeInterval);
-      displayedText = messages[currentMessageIndex].text;
+      if (isSuccess) displayedText = successMessage;
+      else if (showHint) displayedText = hintMessage;
+      else displayedText = messages[currentMessageIndex].text;
+      
       isTyping = false;
       return;
     }
+
+    if (showHint || isSuccess) {
+      showHint = false;
+      isSuccess = false;
+      isError = false;
+      typeCurrentMessage();
+      return;
+    }
+
     if (currentMessageIndex > 0) {
       currentMessageIndex--;
       sessionStorage.setItem('strona7_index', currentMessageIndex.toString());
-      typeMessage();
+      typeCurrentMessage();
     } else {
       location.href = '/strona6';
+    }
+  }
+
+  function checkAnswer() {
+    // Sprawdzamy, czy wszystkie odpowiedzi się zgadzają
+    const allCorrect = answers.every((val, index) => val === correctAnswers[index]);
+    const allFilled = answers.every(val => val !== '');
+
+    if (!allFilled) {
+      isError = true;
+      setTimeout(() => isError = false, 2000);
+      return; // Gracz nie wypełnił wszystkich pół
+    }
+
+    if (allCorrect) {
+      isSuccess = true;
+      isError = false;
+      typeText(successMessage);
+    } else {
+      isError = true;
+      setTimeout(() => isError = false, 2000); 
     }
   }
 
@@ -120,7 +139,8 @@
       if (e.key === 'Escape') { e.preventDefault(); showConfirm = false; }
       return;
     }
-    if (['INPUT', 'TEXTAREA', 'BUTTON'].includes(e.target.tagName)) return;
+    if (['SELECT', 'BUTTON'].includes(e.target.tagName)) return;
+    
     if (e.key === ' ' || e.key === 'Enter') {
       e.preventDefault();
       handleAdvance();
@@ -132,7 +152,7 @@
     if (savedIndex) {
       currentMessageIndex = parseInt(savedIndex);
     }
-    typeMessage();
+    typeCurrentMessage();
     window.addEventListener('keydown', handleKeydown);
     return () => {
       if (typeInterval) clearInterval(typeInterval);
@@ -157,10 +177,7 @@
   </nav>
 
   {#if showConfirm}
-  <div class="confirm-overlay"
-       role="dialog"
-       aria-modal="true"
-       onkeydown={(e) => e.key === 'Escape' && (showConfirm = false)}>
+  <div class="confirm-overlay" role="dialog" aria-modal="true" onkeydown={(e) => e.key === 'Escape' && (showConfirm = false)}>
     <div class="confirm-box">
       <p class="confirm-msg">Czy jesteś pewny? Postęp tej sesji zostanie utracony.</p>
       <div class="confirm-btns">
@@ -175,69 +192,53 @@
     <div class="chess-pattern-bg"></div>
 
     <div class="right-panel">
-      {#if currentWorkspace}
+      {#if currentMessageIndex > 1}
       <div class="workspace">
-        <span class="ws-tag">{currentWorkspace.tag}</span>
-        <h2 class="ws-title">{currentWorkspace.title}</h2>
-        {#if currentWorkspace.content}
-          <p class="ws-content">{currentWorkspace.content}</p>
-        {/if}
-        {#if currentWorkspace.stat}
-          <div class="ws-stat-block">
-            <span class="ws-stat">{currentWorkspace.stat}</span>
-            <span class="ws-stat-label">{currentWorkspace.stat_label}</span>
-          </div>
-        {/if}
-        {#if currentWorkspace.examples}
-          <div class="ws-examples">
-            {#each currentWorkspace.examples as ex}
-              <div class="ws-example" class:ws-bad={ex.bad} class:ws-good={!ex.bad}>
-                <span class="ws-ex-label">{ex.label}</span>
-                <code class="ws-ex-value">{ex.value}</code>
-              </div>
-            {/each}
-          </div>
-        {/if}
-        {#if currentWorkspace.items}
-          <ul class="ws-list">
-            {#each currentWorkspace.items as item}
-              <li class="ws-item">{item}</li>
-            {/each}
-          </ul>
-        {/if}
-        {#if currentWorkspace.steps}
-          <ol class="ws-steps">
-            {#each currentWorkspace.steps as step}
-              <li class="ws-step">{step}</li>
-            {/each}
-          </ol>
-        {/if}
-        {#if currentWorkspace.cards}
-          <div class="ws-grid">
-            {#each currentWorkspace.cards as card}
-              <div class="ws-card">
-                <strong class="ws-card-head">{card.head}</strong>
-                <span class="ws-card-body">{card.body}</span>
-              </div>
-            {/each}
-          </div>
-        {/if}
-        {#if currentWorkspace.bars}
-          <div class="ws-bars">
-            {#each currentWorkspace.bars as bar}
-              <div class="ws-bar-row">
-                <span class="ws-bar-label">{bar.label}</span>
-                <div class="ws-bar-track">
-                  <div class="ws-bar-fill" style="width: {bar.value}%"></div>
+        <span class="ws-tag">Zadanie Logiczne</span>
+        <h2 class="ws-title" style="margin-bottom: 0.5rem;">Podróż Wiadomości</h2>
+        <p class="ws-content">Wybierz odpowiedni stan dokumentu dla każdego etapu jego trasy.</p>
+        
+        <div style="margin-top: 1rem; position: relative; padding-left: 2rem;">
+          <div style="position: absolute; left: 0.6rem; top: 1rem; bottom: 1.5rem; width: 3px; background: rgba(106,117,155,0.2); border-radius: 3px;"></div>
+
+          <div style="display: flex; flex-direction: column; gap: 1.2rem;">
+            {#each journeySteps as step, index}
+              <div style="position: relative; background: rgba(106,117,155,0.04); padding: 0.8rem 1rem; border-radius: 12px; border: 1px solid rgba(106,117,155,0.1);">
+                <div style="position: absolute; left: -1.8rem; top: 50%; transform: translateY(-50%); width: 0.9rem; height: 0.9rem; background: var(--color-primary); border-radius: 50%; border: 2px solid white; box-shadow: 0 0 0 2px rgba(106,117,155,0.2);"></div>
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem;">
+                  <span style="font-weight: 600; font-size: 0.95rem; color: var(--color-text);">{step}</span>
+                  
+                  <select 
+                    bind:value={answers[index]} 
+                    disabled={isSuccess}
+                    style="padding: 0.5rem; border-radius: 8px; border: 2px solid {answers[index] === '' ? 'rgba(106,117,155,0.3)' : 'var(--color-primary)'}; background: white; color: var(--color-text); font-weight: bold; cursor: pointer; outline: none; min-width: 140px;"
+                  >
+                    <option value="" disabled>Wybierz...</option>
+                    <option value="jawny">Tekst jawny</option>
+                    <option value="szyfr">Szyfrogram</option>
+                  </select>
                 </div>
-                <span class="ws-bar-val">{bar.value}%</span>
               </div>
             {/each}
           </div>
-        {/if}
-        {#if currentWorkspace.note}
-          <p class="ws-note">{currentWorkspace.note}</p>
-        {/if}
+        </div>
+
+        <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
+          {#if !isSuccess}
+            <button 
+              onclick={checkAnswer}
+              style="padding: 1rem; border-radius: 8px; background: var(--color-primary); color: white; font-weight: bold; cursor: pointer; border: none; transition: opacity 0.2s;"
+            >
+              Sprawdź trasę
+            </button>
+          {/if}
+
+          {#if isError}
+            <p style="color: #e05a5a; text-align: center; margin: 0; font-size: 0.95rem; font-weight: 600;">Gdzieś jest błąd! Upewnij się, że zaznaczyłeś wszystkie pola właściwie.</p>
+          {/if}
+        </div>
+
       </div>
       {/if}
 
@@ -252,9 +253,13 @@
         <p class="hint-text">
           {isTyping
             ? 'Skip'
-            : currentMessageIndex < messages.length - 1
-              ? 'Kontynuuj →'
-              : 'Przejdź dalej →'}
+            : isSuccess 
+              ? 'Przejdź dalej →'
+              : showHint 
+                ? 'Rozwiąż zadanie wyżej ↑'
+                : currentMessageIndex < messages.length - 1
+                  ? 'Kontynuuj →'
+                  : 'Kliknij po podpowiedź 💡'}
         </p>
       </div>
     </div>
